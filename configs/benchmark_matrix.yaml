@@ -1,0 +1,63 @@
+detection:
+  - branch: yolo11n_detect
+    model_family: ultralytics
+    model_name: yolo11n.pt
+    task_type: detection
+    imgsz: 640
+  - branch: yolo11n_detect_832
+    model_family: ultralytics
+    model_name: yolo11n.pt
+    task_type: detection
+    imgsz: 832
+  - branch: yolo11s_detect
+    model_family: ultralytics
+    model_name: yolo11s.pt
+    task_type: detection
+    imgsz: 640
+  - branch: yolo11s_detect_832
+    model_family: ultralytics
+    model_name: yolo11s.pt
+    task_type: detection
+    imgsz: 832
+  - branch: yolo11m_detect
+    model_family: ultralytics
+    model_name: yolo11m.pt
+    task_type: detection
+    imgsz: 640
+  - branch: yolo11m_detect_832
+    model_family: ultralytics
+    model_name: yolo11m.pt
+    task_type: detection
+    imgsz: 832
+  - branch: rtdetr_l_detect
+    model_family: ultralytics
+    model_name: rtdetr-l.pt
+    task_type: detection
+    imgsz: 640
+
+segmentation:
+  - branch: yolo11n_seg
+    model_family: ultralytics
+    model_name: yolo11n-seg.pt
+    task_type: segmentation
+    imgsz: 640
+  - branch: yolo11s_seg
+    model_family: ultralytics
+    model_name: yolo11s-seg.pt
+    task_type: segmentation
+    imgsz: 640
+  - branch: yolo11s_seg_832
+    model_family: ultralytics
+    model_name: yolo11s-seg.pt
+    task_type: segmentation
+    imgsz: 832
+
+anomaly:
+  - branch: efficientad_s
+    model_family: anomalib
+    model_name: efficientad
+    task_type: anomaly
+  - branch: patchcore
+    model_family: anomalib
+    model_name: patchcore
+    task_type: anomaly

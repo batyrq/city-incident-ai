@@ -1,0 +1,11 @@
+branch: efficientad_s
+task_type: anomaly
+model_family: anomalib
+model_name: efficientad
+epochs: 50
+device: auto
+save_dir: runs/train/efficientad_s
+manifest_path: datasets/unified/manifest.parquet
+policy_path: configs/training_policy.yaml
+force_smoke_test: false
+force_full_train: false

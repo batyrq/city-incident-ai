@@ -1,0 +1,56 @@
+mode: incident_enhanced
+model_type: yolo11s
+model_weights: yolo11s.pt
+standard_model: yolo11s.pt
+open_vocab_model: yolov8s-world.pt
+incident_model_type: yolo-world
+incident_weights: yolov8s-world.pt
+run_name: incidents_pretrained_demo
+report_path: reports/incidents_pretrained_demo_summary.json
+alerts_root: alerts
+prompts:
+  - pothole
+  - road damage
+  - damaged asphalt
+  - road crack
+  - broken road surface
+  - fire
+  - smoke
+  - accident
+  - car crash
+  - collision
+  - wrecked vehicle
+incident_prompts:
+  - pothole
+  - road damage
+  - damaged asphalt
+  - road crack
+  - broken road surface
+  - fire
+  - smoke
+  - accident
+  - car crash
+  - collision
+  - wrecked vehicle
+thresholds:
+  conf: 0.25
+  temporal_k: 3
+  temporal_n: 6
+  min_bbox_area: 300
+  stopped_vehicle_seconds: 12
+  overlap_iou_threshold: 0.35
+  road_roi_fraction: 0.58
+  cooldown_seconds: 120
+runtime:
+  approx_fps: 25
+  score_threshold: 0.25
+  iou_threshold: 0.5
+  clip_seconds_before: 3
+  max_frames: 8
+tracking:
+  tracker: bytetrack.yaml
+  stopped_vehicle_motion_threshold_px: 6.0
+  stopped_vehicle_dwell_seconds: 12
+streams:
+  - camera_id: demo_cam_01
+    uri: rtsp://127.0.0.1:8554/live

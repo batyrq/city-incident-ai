@@ -1,0 +1,43 @@
+mode: open_vocab
+model_type: yolo-world
+model_weights: yolov8s-world.pt
+run_name: open_vocab_demo
+report_path: reports/open_vocab_demo_summary.json
+alerts_root: alerts
+prompts:
+  - fire
+  - smoke
+  - flood
+  - water pooling
+runtime:
+  approx_fps: 25
+  score_threshold: 0.25
+  iou_threshold: 0.5
+  clip_seconds_before: 3
+  max_frames: 4
+tracking:
+  tracker: bytetrack.yaml
+  stopped_vehicle_motion_threshold_px: 6.0
+  stopped_vehicle_dwell_seconds: 15
+rules:
+  fire:
+    confirm_window_frames: 8
+    min_confirm_frames: 3
+    cooldown_seconds: 120
+  smoke:
+    confirm_window_frames: 10
+    min_confirm_frames: 4
+    cooldown_seconds: 120
+  flood_water:
+    confirm_window_frames: 10
+    min_confirm_frames: 4
+    cooldown_seconds: 180
+  stopped_vehicle:
+    motion_threshold_px: 6.0
+    dwell_seconds: 15
+    cooldown_seconds: 180
+  crowding:
+    min_count: 12
+    confirm_window_frames: 5
+    min_confirm_frames: 3
+    cooldown_seconds: 90

@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Outputs and run artifacts
+alerts/
+reports/
+runs/
+models/*.json
+
+# Dataset working dirs
+datasets/raw/
+datasets/interim/
+datasets/unified/
+
+# Large binaries and demo media
+*.pt
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+demo.mp4
+
+# Local OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

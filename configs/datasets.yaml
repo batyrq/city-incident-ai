@@ -1,0 +1,106 @@
+datasets:
+  - dataset_name: dfire
+    task_type: detection
+    access_mode: manual_download
+    can_auto_download: false
+    enabled: true
+    adapter: dfire
+    raw_root: datasets/raw/dfire
+    target_interim_layout: datasets/interim/dfire
+    expected_raw_layout:
+      - images/
+      - labels/
+    label_mapping_supported: true
+    notes: "Common public source, but hosting can vary. Keep as manual adapter unless a stable mirror is available."
+  - dataset_name: fasdd
+    task_type: detection
+    access_mode: manual_download
+    can_auto_download: false
+    enabled: true
+    adapter: fasdd
+    raw_root: datasets/raw/fasdd
+    target_interim_layout: datasets/interim/fasdd
+    expected_raw_layout:
+      - train/
+      - val/
+    label_mapping_supported: true
+    notes: "Manual download expected."
+  - dataset_name: onfire_local
+    task_type: detection
+    access_mode: local_only
+    can_auto_download: false
+    enabled: true
+    adapter: onfire_local
+    raw_root: datasets/raw/onfire_local
+    target_interim_layout: datasets/interim/onfire_local
+    expected_raw_layout:
+      - videos/
+    label_mapping_supported: false
+    notes: "Optional local video-only source."
+  - dataset_name: r2s100k
+    task_type: segmentation
+    access_mode: manual_download
+    can_auto_download: false
+    enabled: true
+    adapter: r2s100k
+    raw_root: datasets/raw/r2s100k
+    target_interim_layout: datasets/interim/r2s100k
+    expected_raw_layout:
+      - images/
+      - masks/
+    label_mapping_supported: true
+    notes: "Manual access varies; treat as optional segmentation source."
+  - dataset_name: custom_yolo
+    task_type: detection
+    access_mode: local_only
+    can_auto_download: false
+    enabled: true
+    adapter: custom_yolo
+    raw_root: datasets/raw/custom_yolo
+    target_interim_layout: datasets/interim/custom_yolo
+    expected_raw_layout:
+      - images/train/
+      - images/val/
+      - labels/train/
+      - labels/val/
+    label_mapping_supported: true
+    notes: "Universal local YOLO-format dataset source for detection fine-tuning."
+  - dataset_name: cadp
+    task_type: detection
+    access_mode: manual_download
+    can_auto_download: false
+    enabled: true
+    adapter: cadp
+    raw_root: datasets/raw/cadp
+    target_interim_layout: datasets/interim/cadp
+    expected_raw_layout:
+      - images/
+      - annotations/
+    label_mapping_supported: true
+    notes: "Traffic incident source, manual preparation required."
+  - dataset_name: aicity2021_track4
+    task_type: anomaly
+    access_mode: manual_download
+    can_auto_download: false
+    enabled: true
+    adapter: aicity2021_track4
+    raw_root: datasets/raw/aicity2021_track4
+    target_interim_layout: datasets/interim/aicity2021_track4
+    expected_raw_layout:
+      - train/
+      - val/
+    label_mapping_supported: false
+    notes: "Manual challenge dataset; use for anomaly sanity checks only."
+  - dataset_name: local_anomaly_rois
+    task_type: anomaly
+    access_mode: local_only
+    can_auto_download: false
+    enabled: true
+    adapter: local_anomaly_rois
+    raw_root: datasets/raw/local_anomaly_rois
+    target_interim_layout: datasets/interim/local_anomaly_rois
+    expected_raw_layout:
+      - normal/
+      - anomalous/
+    label_mapping_supported: false
+    notes: "Primary local anomaly branch input if available."

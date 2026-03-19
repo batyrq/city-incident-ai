@@ -1,0 +1,17 @@
+branch: yolo11s_seg
+task_type: segmentation
+model_family: ultralytics
+model_name: yolo11s-seg.pt
+imgsz: 640
+epochs: 80
+patience: 20
+batch: 8
+device: auto
+amp: true
+resume: false
+save_dir: runs/train/yolo11s_seg
+manifest_path: datasets/unified/manifest.parquet
+policy_path: configs/training_policy.yaml
+data_yaml_path: datasets/unified/yolo_seg_data.yaml
+force_smoke_test: false
+force_full_train: false

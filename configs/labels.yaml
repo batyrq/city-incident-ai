@@ -1,0 +1,39 @@
+canonical_classes:
+  - fire
+  - smoke
+  - flood_water
+  - traffic_incident
+  - vehicle
+
+detect_classes:
+  - fire
+  - smoke
+  - flood_water
+  - traffic_incident
+
+mapping:
+  fire: fire
+  flames: fire
+  smoke: smoke
+  haze_smoke: smoke
+  flood: flood_water
+  floodwater: flood_water
+  flood_water: flood_water
+  water_puddle: flood_water
+  urban_flood: flood_water
+  crash: traffic_incident
+  collision: traffic_incident
+  accident: traffic_incident
+  anomaly: traffic_incident
+  traffic_incident: traffic_incident
+
+hard_negative_aliases:
+  - wet_road
+  - wetstreet
+  - reflection
+
+ignore_aliases:
+  - stopped_vehicle
+  - stalled_vehicle
+  - pipe_burst
+  - leak

@@ -1,0 +1,26 @@
+branch: yolo11s_detect
+task_type: detection
+model_family: ultralytics
+model_name: yolo11s.pt
+imgsz: 640
+epochs: 80
+patience: 20
+batch: 12
+device: auto
+amp: true
+resume: false
+save_dir: runs/train/yolo11s_detect
+manifest_path: datasets/unified/manifest.parquet
+policy_path: configs/training_policy.yaml
+data_yaml_path: datasets/unified/detect_yolo/dataset.yaml
+force_smoke_test: false
+force_full_train: false
+smoke_test_subset_fraction: 0.1
+augment:
+  mosaic: true
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  blur: 0.15
+  noise: 0.1
+  compression: 0.1

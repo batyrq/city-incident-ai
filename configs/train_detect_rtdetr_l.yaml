@@ -1,0 +1,17 @@
+branch: rtdetr_l_detect
+task_type: detection
+model_family: ultralytics
+model_name: rtdetr-l.pt
+imgsz: 640
+epochs: 80
+patience: 20
+batch: 6
+device: auto
+amp: true
+resume: false
+save_dir: runs/train/rtdetr_l_detect
+manifest_path: datasets/unified/manifest.parquet
+policy_path: configs/training_policy.yaml
+data_yaml_path: datasets/unified/yolo_detect_data.yaml
+force_smoke_test: false
+force_full_train: false

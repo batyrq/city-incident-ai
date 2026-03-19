@@ -1,0 +1,11 @@
+branch: patchcore
+task_type: anomaly
+model_family: anomalib
+model_name: patchcore
+epochs: 1
+device: auto
+save_dir: runs/train/patchcore
+manifest_path: datasets/unified/manifest.parquet
+policy_path: configs/training_policy.yaml
+force_smoke_test: false
+force_full_train: false

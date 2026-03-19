@@ -1,0 +1,32 @@
+defaults:
+  allow_force_full_train: false
+  smoke_test_epochs: 2
+  smoke_test_subset_fraction: 0.05
+
+detection:
+  min_images_total: 150
+  min_positive_instances_total: 300
+  min_positive_instances_per_class: 20
+  min_val_samples: 20
+  min_classes_present: 2
+  smoke_min_images_total: 24
+  smoke_min_positive_instances_total: 24
+  smoke_min_val_samples: 4
+
+segmentation:
+  min_images_total: 120
+  min_positive_instances_total: 150
+  min_positive_instances_per_class: 20
+  min_mask_images: 80
+  min_val_samples: 20
+  min_classes_present: 1
+  smoke_min_images_total: 20
+  smoke_min_mask_images: 10
+  smoke_min_val_samples: 5
+
+anomaly:
+  min_images_total: 300
+  min_anomaly_normal_images: 250
+  min_val_samples: 30
+  smoke_min_images_total: 40
+  smoke_min_val_samples: 8
