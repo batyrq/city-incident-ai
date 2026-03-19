@@ -38,7 +38,7 @@ class DemoSpec:
     model_type: str
     weights: str
     prompts: list[str] = field(default_factory=list)
-    standard_weights: str = "yolo11s.pt"
+    standard_weights: str = "yolo11s.onnx"
     incident_weights: str | None = None
     incident_model_type: str | None = None
     incident_prompts: list[str] = field(default_factory=list)
@@ -458,7 +458,7 @@ def _load_detector(config: dict[str, Any], model_path: str | None = None) -> tup
         if model_type in {"yolo11s", "yolo11n", "yolo11m", "yolo"}:
             from ultralytics import YOLO
 
-            return YOLO(weights), spec
+            return YOLO(weights, task="detect"), spec
 
         if model_type in {"yolo-world", "yoloworld", "yolov8s-world", "yolov8s-world.pt"}:
             from ultralytics import YOLOWorld
@@ -483,7 +483,7 @@ def _load_detector(config: dict[str, Any], model_path: str | None = None) -> tup
             try:
                 from ultralytics import YOLO
 
-                fallback = YOLO(_default_weights("yolo11s"))
+                fallback = YOLO(_default_weights("yolo11s"), task="detect")
                 spec.fallback_reason = f"Open-vocabulary model unavailable, falling back to pretrained YOLO11s: {exc}"
                 spec.model_type = "yolo11s"
                 spec.mode = "pretrained_yolo11s"
@@ -966,7 +966,7 @@ def _default_weights(model_type: str) -> str:
         return "yolov8s-world.pt"
     if model_type in {"yoloe", "yoloe-11s"}:
         return "yoloe-11s.pt"
-    return "yolo11s.pt"
+    return "yolo11s.onnx"
 
 
 def _default_report_path(mode: str) -> str:

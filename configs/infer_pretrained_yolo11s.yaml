@@ -1,6 +1,6 @@
 mode: pretrained_yolo11s
 model_type: yolo11s
-model_weights: yolo11s.pt
+model_weights: yolo11s.onnx
 run_name: pretrained_yolo11s_demo
 report_path: reports/pretrained_yolo11s_demo_summary.json
 alerts_root: alerts

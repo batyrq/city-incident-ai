@@ -17,7 +17,7 @@ This project is intentionally demo-oriented: it runs without mandatory fine-tuni
 
 The stable baseline today is:
 
-- pretrained `YOLO11s` video inference,
+- pretrained `YOLO11s` video inference via `yolo11s.onnx`,
 - optional `YOLO-World` / `YOLOE` open-vocabulary mode,
 - Ultralytics tracking,
 - stopped-vehicle, fire/smoke, flood/water, and crowding heuristics,

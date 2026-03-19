@@ -11,12 +11,12 @@ detection:
     imgsz: 832
   - branch: yolo11s_detect
     model_family: ultralytics
-    model_name: yolo11s.pt
+    model_name: yolo11s.onnx
     task_type: detection
     imgsz: 640
   - branch: yolo11s_detect_832
     model_family: ultralytics
-    model_name: yolo11s.pt
+    model_name: yolo11s.onnx
     task_type: detection
     imgsz: 832
   - branch: yolo11m_detect

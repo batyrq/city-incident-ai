@@ -1,6 +1,6 @@
 mode: pretrained_yolo11s
 model_type: yolo11s
-model_weights: yolo11s.pt
+model_weights: yolo11s.onnx
 run_name: rtsp_demo
 report_path: reports/rtsp_demo_summary.json
 alerts_root: alerts

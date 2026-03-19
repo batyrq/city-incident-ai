@@ -1,7 +1,7 @@
 mode: incident_enhanced
 model_type: yolo11s
-model_weights: yolo11s.pt
-standard_model: yolo11s.pt
+model_weights: yolo11s.onnx
+standard_model: yolo11s.onnx
 open_vocab_model: yolov8s-world.pt
 incident_model_type: yolo-world
 incident_weights: yolov8s-world.pt
