@@ -1,13 +1,13 @@
 # Benchmark Plan
 
-Поддерживаемая матрица:
+Supported matrix:
 
 - Detection: YOLO11n/s/m, RT-DETR-L
 - Segmentation: YOLO11n-seg, YOLO11s-seg
 - Anomaly: EfficientAD-S, PatchCore
 
-Честный benchmark означает:
+An honest benchmark means:
 
-- пропущенные ветки помечаются как `skipped`;
-- ветки без достаточного train set помечаются как `pretrained_only`;
-- `smoke_test_only` не выдаётся как полноценный production result.
+- skipped branches are marked as `skipped`;
+- branches without a sufficient train set are marked as `pretrained_only`;
+- `smoke_test_only` is not presented as a full production result.

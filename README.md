@@ -4,6 +4,34 @@ Pretrained-first urban safety demo for local video inference.
 
 This project is intentionally demo-oriented: it runs without mandatory fine-tuning, without a required dataset bootstrap, and without a large backend stack. The main path is pretrained video inference with tracking, event heuristics, and machine-readable outputs for later frontend integration.
 
+## Pipeline
+
+```mermaid
+flowchart TD
+    SRC["Source<br/>video file or RTSP stream"]
+
+    SRC --> DET["YOLO11s ONNX detection<br/>+ ByteTrack persistent IDs"]
+    SRC --> OV["Open-vocabulary detector, optional<br/>YOLO-World / YOLOE text prompts"]
+
+    DET --> DETS["Per-frame detections<br/>class, confidence, bbox, track_id"]
+    OV --> DETS
+
+    DETS --> DRAW["Annotate frame<br/>boxes, labels, track IDs"]
+    DETS --> RULES
+
+    subgraph RULES["Event heuristics: confirm window + cooldown"]
+        direction TB
+        R1["stopped_vehicle<br/>dwell time + motion threshold"]
+        R2["fire / smoke / flood_water<br/>prompt candidates"]
+        R3["crowding<br/>person + vehicle count"]
+        R4["accident / collision / traffic_incident<br/>prompt signals fused with tracking"]
+    end
+
+    DRAW --> VID["alerts/RUN/DATE/annotated.mp4"]
+    RULES --> EVT["Per-event artifacts<br/>event.json, thumbnail.jpg, clip"]
+    RULES --> JSON["reports/RUN_events.json<br/>reports/RUN_timeline.json<br/>reports/RUN_artifacts.json<br/>reports/..._summary.json"]
+```
+
 ## What This Project Is
 
 `city-incident-ai` is a local Python project for urban safety / city incident demo flows. It focuses on:

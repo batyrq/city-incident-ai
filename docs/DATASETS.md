@@ -1,19 +1,19 @@
 # Datasets
 
-Проект разделяет источники данных на `auto_download`, `manual_download`, `local_only`.
+The project splits data sources into `auto_download`, `manual_download`, `local_only`.
 
-- `auto_download`: используется только если есть стабильная публичная ссылка и понятная проверка.
-- `manual_download`: pipeline не падает, а создаёт ожидаемую раскладку и пишет инструкцию в `docs/MANUAL_DOWNLOAD.md`.
-- `local_only`: используется только если пользователь уже положил данные локально.
+- `auto_download`: used only when there is a stable public link and a clear verification step.
+- `manual_download`: the pipeline does not fail; it creates the expected layout and writes instructions into `docs/MANUAL_DOWNLOAD.md`.
+- `local_only`: used only when the user has already placed the data locally.
 
-Поддерживаемые адаптеры в этом каркасе:
+Adapters supported in this skeleton:
 
 - `dfire`: fire/smoke detection, manual.
 - `fasdd`: fire/smoke detection, manual.
-- `onfire_local`: локальные видео, weak/local source.
+- `onfire_local`: local videos, weak/local source.
 - `r2s100k`: optional flood/water segmentation, manual.
 - `cadp`: traffic incident detection, manual.
 - `aicity2021_track4`: anomaly-ready challenge-style source, manual.
-- `local_anomaly_rois`: локальный anomaly source.
+- `local_anomaly_rois`: local anomaly source.
 
-Если данных нет, training gate обязан выбрать `pretrained_only` или `skip_branch`.
+If the data is missing, the training gate must choose `pretrained_only` or `skip_branch`.

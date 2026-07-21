@@ -1,18 +1,18 @@
 # Training Policy
 
-Каждая ветка проходит `should_train_branch(branch_name, dataset_stats, config)`.
+Every branch goes through `should_train_branch(branch_name, dataset_stats, config)`.
 
-Возможные решения:
+Possible decisions:
 
 - `train_full`
 - `train_smoke_test`
 - `use_pretrained_only`
 - `skip_branch`
 
-Ключевые принципы:
+Key principles:
 
-- benchmark matrix не гарантирует обучение;
-- `stopped_vehicle` идёт через tracking/rules;
-- `pipe burst / leak` живут в anomaly branch, а не forced detector class;
-- segmentation тренируется только при наличии mask labels;
-- anomaly branch тренируется только при наличии normal-only / ROI-ready данных.
+- the benchmark matrix does not guarantee training;
+- `stopped_vehicle` is handled through tracking/rules;
+- `pipe burst / leak` live in the anomaly branch, not as a forced detector class;
+- segmentation is trained only when mask labels are available;
+- the anomaly branch is trained only when normal-only / ROI-ready data is available.
