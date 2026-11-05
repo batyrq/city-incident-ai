@@ -1,0 +1,183 @@
+{
+  "timelapse_reference_frame_diff": 8.09,
+  "clips": [
+    {
+      "id": "a",
+      "file": "a_busy_street_elevated.mp4",
+      "label": "a \u00b7 Busy street, fixed elevated camera",
+      "pose": false,
+      "max_frames": 0,
+      "shows": "Fixed elevated camera over a crosswalk at golden hour, cars and pedestrians. The clean-tracking case.",
+      "source": "https://mixkit.co/free-stock-video/aerial-view-of-people-at-pedestrian-crossing-61/",
+      "origin": "mixkit 61, first 20 s",
+      "width": 1280,
+      "height": 720,
+      "fps": 23.98,
+      "seconds": 20.0,
+      "size_mb": 3.12,
+      "mean_frame_diff": 3.71,
+      "frames_processed": 480,
+      "unique_tracks": 21,
+      "classes_seen": [
+        "car",
+        "person",
+        "truck"
+      ],
+      "pipeline_fps": 51.839,
+      "device": "mps",
+      "events": []
+    },
+    {
+      "id": "b",
+      "file": "b_pedestrian_crowd.mp4",
+      "label": "b \u00b7 Pedestrian crowd (fires crowding)",
+      "pose": false,
+      "max_frames": 0,
+      "shows": "Dense group of pedestrians walking towards a fixed camera. Meant to fire the crowding event.",
+      "source": "https://mixkit.co/free-stock-video/popular-street-with-pedestrians-taking-a-walk-9261/",
+      "origin": "mixkit 9261, whole clip",
+      "width": 1280,
+      "height": 720,
+      "fps": 29.97,
+      "seconds": 16.6,
+      "size_mb": 1.6,
+      "mean_frame_diff": 0.92,
+      "frames_processed": 499,
+      "unique_tracks": 41,
+      "classes_seen": [
+        "motorcycle",
+        "person"
+      ],
+      "pipeline_fps": 55.609,
+      "device": "mps",
+      "events": [
+        {
+          "type": "crowding",
+          "start_s": 4.671,
+          "tracks": 12
+        }
+      ]
+    },
+    {
+      "id": "c",
+      "file": "c_stopped_vehicle.mp4",
+      "label": "c \u00b7 Stationary vehicles (stopped_vehicle)",
+      "pose": false,
+      "max_frames": 0,
+      "shows": "Fixed camera over a street with parked and waiting cars. The only clip found where stopped_vehicle fires within 20 s.",
+      "source": "https://mixkit.co/free-stock-video/traffic-light-directing-traffic-4272/",
+      "origin": "mixkit 4272, first 20 s",
+      "width": 1280,
+      "height": 720,
+      "fps": 30.0,
+      "seconds": 20.0,
+      "size_mb": 2.06,
+      "mean_frame_diff": 1.17,
+      "frames_processed": 600,
+      "unique_tracks": 110,
+      "classes_seen": [
+        "bus",
+        "car",
+        "person",
+        "truck"
+      ],
+      "pipeline_fps": 55.015,
+      "device": "mps",
+      "events": [
+        {
+          "type": "crowding",
+          "start_s": 0.1,
+          "tracks": 14
+        },
+        {
+          "type": "stopped_vehicle",
+          "start_s": 15.033,
+          "tracks": 18
+        }
+      ]
+    },
+    {
+      "id": "d",
+      "file": "d_rainy_night.mp4",
+      "label": "d \u00b7 Rainy night (known weakness)",
+      "pose": false,
+      "max_frames": 0,
+      "shows": "Times Square on a rainy night: glare, motion blur and umbrellas. Shows the track-ID churn described in docs/ERROR_ANALYSIS.md.",
+      "source": "https://mixkit.co/free-stock-video/times-square-during-a-rainy-night-4332/",
+      "origin": "mixkit 4332, whole clip",
+      "width": 1280,
+      "height": 720,
+      "fps": 30.0,
+      "seconds": 19.9,
+      "size_mb": 7.72,
+      "mean_frame_diff": 4.46,
+      "frames_processed": 596,
+      "unique_tracks": 195,
+      "classes_seen": [
+        "bicycle",
+        "car",
+        "person",
+        "truck"
+      ],
+      "pipeline_fps": 45.096,
+      "device": "mps",
+      "events": [
+        {
+          "type": "crowding",
+          "start_s": 0.167,
+          "tracks": 13
+        }
+      ]
+    },
+    {
+      "id": "e",
+      "file": "e_treadmill_runner_side.mp4",
+      "label": "e \u00b7 Runner on a treadmill, side view (pose on)",
+      "pose": true,
+      "max_frames": 0,
+      "shows": "Man running on a treadmill filmed from the side, full body visible. The pose-mode / gait-analysis connection.",
+      "source": "https://mixkit.co/free-stock-video/young-man-does-cardio-workout-at-the-gym-49276/",
+      "origin": "mixkit 49276, first 20 s",
+      "width": 1280,
+      "height": 720,
+      "fps": 29.97,
+      "seconds": 20.0,
+      "size_mb": 2.91,
+      "mean_frame_diff": 3.1,
+      "frames_processed": 600,
+      "unique_tracks": 11,
+      "classes_seen": [
+        "bicycle",
+        "motorcycle",
+        "person"
+      ],
+      "pipeline_fps": 24.872,
+      "device": "mps",
+      "events": []
+    },
+    {
+      "id": "f",
+      "file": "f_track_runner_front.mp4",
+      "label": "f \u00b7 Jogger on a running track, front view (pose on)",
+      "pose": true,
+      "max_frames": 0,
+      "shows": "Man jogging towards the camera on an outdoor running track, full body visible. A second pose example (front view).",
+      "source": "https://mixkit.co/free-stock-video/man-jogging-on-a-running-track-on-a-sunny-day-32799/",
+      "origin": "mixkit 32799, whole clip",
+      "width": 1280,
+      "height": 720,
+      "fps": 24.0,
+      "seconds": 10.7,
+      "size_mb": 4.16,
+      "mean_frame_diff": 6.57,
+      "frames_processed": 256,
+      "unique_tracks": 1,
+      "classes_seen": [
+        "person"
+      ],
+      "pipeline_fps": 23.544,
+      "device": "mps",
+      "events": []
+    }
+  ]
+}

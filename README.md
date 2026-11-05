@@ -160,7 +160,7 @@ make run
 python -m eval.eval_detection && python -m eval.eval_tracking && python -m eval.benchmark_speed
 ```
 
-`make run` rebuilds `site/` from `reports/metrics/*.json` and starts `server.py`: the results site at `/` and the Gradio live demo (embedded in the "Try it live" section, also at `/demo`). Upload a clip or pick a bundled one, with pose on/off, device and a frame limit. The page works offline; when the static `site/` is hosted without the server (e.g. GitHub Pages) the live section shows a "runs locally" card instead.
+`make run` rebuilds `site/` from `reports/metrics/*.json` and starts `server.py`: the results site at `/` and the Gradio live demo (embedded in the "Try it live" section, also at `/demo`). Upload a clip or pick one of the six example clips in `demo_videos/` (table of what each shows and fires: `demo_videos/README.md`; the default is the pedestrian crowd), with pose on/off, device and a frame limit. The page works offline; when the static `site/` is hosted without the server (e.g. GitHub Pages) the live section shows a "runs locally" card instead.
 
 Command-line alternatives: `make demo SRC=path/to/video.mp4` (same as `python demo.py --source ... [--pose] [--max-frames N]`) writes an H.264 `outputs/<clip>_demo.mp4`; `make site` only rebuilds the static page. `demo.py` uses `yolo11s.pt` on Apple MPS when both are available and otherwise the repo's `yolo11s.onnx` on CPU (`--device cpu` forces it). The demo clips are free Mixkit videos kept locally in `data/videos/` (not committed). The classic entry point still works: `python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source video.mp4 [--max-frames N]`.
 
