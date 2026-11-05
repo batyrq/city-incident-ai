@@ -1,169 +1,12 @@
 # city-incident-ai
 
-Pretrained-first urban safety demo for local video inference.
+![demo: YOLO11s + ByteTrack on a city camera clip (boxes, track IDs, 1 s trails, FPS/latency HUD)](docs/demo.gif)
 
-This project is intentionally demo-oriented: it runs without mandatory fine-tuning, without a required dataset bootstrap, and without a large backend stack. The main path is pretrained video inference with tracking, event heuristics, and machine-readable outputs for later frontend integration.
+Video analytics for city cameras: YOLO11s detection and ByteTrack tracking on a video file, rule-based events, and an annotated H.264 video plus JSON outputs. The default pipeline uses COCO-pretrained weights (no fine-tuning), tracks people and vehicles (`person, bicycle, car, motorcycle, bus, truck`), and runs two event rules, `stopped_vehicle` (dwell time + pixel-motion threshold) and `crowding` (person count). On an Apple M5 the full pipeline (decode, detect, track, rules, draw, write) ran at 48.1 FPS with PyTorch on the GPU (MPS) and 21.1 FPS with the ONNX model on CPU (300 frames of one clip; see Speed vs accuracy). Person detection and tracking are evaluated on MOT17; the event rules have no event-level ground truth yet. See [Limitations](#limitations) and [docs/ERROR_ANALYSIS.md](docs/ERROR_ANALYSIS.md).
 
-## Pipeline
+![demo with --pose: yolo11n-pose skeletons on a rainy night clip](docs/demo_pose.gif)
 
-```mermaid
-flowchart TD
-    SRC["Source<br/>video file or RTSP stream"]
-
-    SRC --> DET["YOLO11s ONNX detection<br/>+ ByteTrack persistent IDs"]
-    SRC --> OV["Open-vocabulary detector, optional<br/>YOLO-World / YOLOE text prompts"]
-
-    DET --> DETS["Per-frame detections<br/>class, confidence, bbox, track_id"]
-    OV --> DETS
-
-    DETS --> DRAW["Annotate frame<br/>boxes, labels, track IDs"]
-    DETS --> RULES
-
-    subgraph RULES["Event heuristics: confirm window + cooldown"]
-        direction TB
-        R1["stopped_vehicle<br/>dwell time + motion threshold"]
-        R2["fire / smoke / flood_water<br/>prompt candidates"]
-        R3["crowding<br/>person + vehicle count"]
-        R4["accident / collision / traffic_incident<br/>prompt signals fused with tracking"]
-    end
-
-    DRAW --> VID["alerts/RUN/DATE/annotated.mp4"]
-    RULES --> EVT["Per-event artifacts<br/>event.json, thumbnail.jpg, clip"]
-    RULES --> JSON["reports/RUN_events.json<br/>reports/RUN_timeline.json<br/>reports/RUN_artifacts.json<br/>reports/..._summary.json"]
-```
-
-## What This Project Is
-
-`city-incident-ai` is a local Python project for urban safety / city incident demo flows. It focuses on:
-
-- pretrained detection for common urban objects,
-- optional open-vocabulary prompts for fire/smoke/flood-like scenes,
-- tracking IDs and rule-based event alerts,
-- annotated video outputs plus JSON artifacts for UI consumption.
-
-## Current MVP Capabilities
-
-The stable baseline today is:
-
-- pretrained `YOLO11s` video inference via `yolo11s.onnx`,
-- optional `YOLO-World` / `YOLOE` open-vocabulary mode,
-- Ultralytics tracking,
-- stopped-vehicle, fire/smoke, flood/water, and crowding heuristics,
-- annotated MP4 output,
-- summary JSON, events JSON, timeline JSON, and artifacts JSON.
-
-Incident-enhanced demo is available as an experimental extension for:
-
-- `pothole_candidate`
-- `road_damage_candidate`
-- `fire_candidate`
-- `smoke_candidate`
-- `accident_candidate`
-
-Training remains in the repository, but it is not the main demo path for this MVP.
-
-## Quick Start
-
-Linux/macOS:
-
-```bash
-bash scripts/bootstrap_env.sh
-source .venv/bin/activate
-python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
-```
-
-Windows PowerShell:
-
-```powershell
-.\scripts\bootstrap_env.ps1
-.\.venv\Scripts\Activate.ps1
-python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
-```
-
-Manual install (what bootstrap does, plus the ONNX runtime pieces the YOLO11s ONNX path needs; Python 3.11/3.12):
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt ultralytics onnx onnxruntime lap
-```
-
-If `demo.mp4` does not exist, the run will finish with a skipped summary instead of crashing.
-
-## Demo Modes
-
-Standard pretrained mode:
-
-```bash
-python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
-```
-
-Open-vocabulary mode:
-
-```bash
-python infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4
-```
-
-Incident-enhanced mode:
-
-```bash
-python infer_video.py --config configs/infer_incidents_pretrained.yaml --source demo.mp4
-```
-
-Optional RTSP demo:
-
-```bash
-python infer_rtsp.py --config configs/inference_rtsp.yaml
-```
-
-Useful CLI overrides:
-
-```bash
-python infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4 --prompts "fire,smoke,flood"
-python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --run-name my_demo
-python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --report-path reports/my_demo_summary.json
-```
-
-## Outputs
-
-Each run writes human-viewable and machine-readable artifacts:
-
-- `alerts/<run_name>/<date>/annotated.mp4`
-- `alerts/<run_name>/<date>/predictions.jsonl`
-- `alerts/<run_name>/<date>/predictions.csv`
-- `alerts/<run_name>/<date>/timeline.csv`
-- `alerts/<run_name>/<date>/events.json`
-- `reports/<run_name>_summary.json`
-- `reports/<run_name>_events.json`
-- `reports/<run_name>_timeline.json`
-- `reports/<run_name>_artifacts.json`
-
-The summary JSON is the main frontend-friendly entry point.
-
-## Limitations
-
-- Open-vocabulary mode is experimental and may fall back to pretrained YOLO11s if the open-vocabulary model is unavailable.
-- Incident-enhanced mode is experimental and should be treated as candidate-level, prompt-based, and heuristic-assisted.
-- This is not a fine-tuning-first project anymore.
-- The demo path is not intended to be a full production MLOps stack.
-- If a source file is missing, the scripts write a skipped report and exit cleanly.
-
-## Frontend Integration Overview
-
-The frontend should treat `reports/<run_name>_summary.json` as the primary run record and use:
-
-- `reports/<run_name>_events.json` for event cards,
-- `reports/<run_name>_timeline.json` for per-frame / per-second timelines,
-- `reports/<run_name>_artifacts.json` for output paths,
-- `alerts/<run_name>/<date>/annotated.mp4` for playback.
-
-See [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md) for the API draft and example payloads.
-
-## Reference Docs
-
-- [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md)
-- [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md)
-- [`docs/REPO_GUIDE.md`](docs/REPO_GUIDE.md)
-- [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md)
+*`--pose` adds yolo11n-pose skeletons; the red banner is the `crowding` event firing.*
 
 ## Results
 
@@ -273,6 +116,10 @@ python -m eval.eval_tracking                   # -> reports/metrics/tracking.jso
 python -m eval.eval_tracking --conf-ablation   # -> reports/metrics/tracking_conf_ablation.json
 python -m eval.draw_check                      # -> docs/eval_check/
 python eval/make_results_md.py                 # prints the tables above
+python -m eval.benchmark_speed                 # -> reports/metrics/speed.json, docs/speed_vs_ap.png (needs yolo11s.pt, yolo11n.pt)
+python -m eval.error_analysis --e-pick 61:436:242:269,4332:288:240:308,4332:428:467:487   # -> docs/failures/, reports/metrics/error_analysis.json
+                                               #    (needs infer_video.py runs named analysis_61 / analysis_4332 on the two Mixkit clips)
+python -m eval.int8_debug                      # -> reports/metrics/int8_debug.json
 ```
 
 ### How it is scored
@@ -297,3 +144,125 @@ python eval/make_results_md.py                 # prints the tables above
   BoT-SORT vs ByteTrack differences are within what you would expect from noise at this sample size.
 - **Metric implementation.** py-motmetrics MOTA/IDF1 and the ignore handling above follow the MOT Challenge convention but this is not the
   official TrackEval/HOTA pipeline, so numbers can differ slightly from leaderboard values. `coco128` is not used for any evaluation (its images come from COCO train2017).
+
+## Quick start
+
+```bash
+# 1. setup (Python 3.11/3.12)
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt ultralytics onnx onnxruntime lap motmetrics matplotlib scipy
+python -c "from ultralytics import YOLO; YOLO('yolo11s.pt'); YOLO('yolo11n-pose.pt')"   # weights for the MPS path and --pose
+
+# 2. demo -> outputs/<clip>_demo.mp4 (H.264) + reports/demo_<clip>_summary.json + alerts/demo_<clip>/...
+make demo SRC=path/to/video.mp4        # same as: python demo.py --source path/to/video.mp4  [--pose] [--max-frames N]
+
+# 3. evaluation (needs MOT17 train sequences 02/04/09 in data/mot/, see Reproduce below)
+python -m eval.eval_detection && python -m eval.eval_tracking && python -m eval.benchmark_speed
+```
+
+`demo.py` uses `yolo11s.pt` on Apple MPS when both are available and otherwise the repo's `yolo11s.onnx` on CPU (`--device cpu` forces it). The demo clips used here are free Mixkit videos kept locally in `data/videos/` (not committed). The classic entry point still works: `python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source video.mp4 [--max-frames N]`.
+
+## Pipeline
+
+```mermaid
+flowchart TD
+    SRC["Source<br/>video file (RTSP script exists, untested here)"]
+    SRC --> DET["YOLO11s (ONNX CPU or PyTorch MPS)<br/>+ ByteTrack persistent IDs<br/>tracker sees conf >= 0.10"]
+    DET --> DETS["Per-frame detections, conf >= 0.35<br/>class, confidence, bbox, track_id"]
+    DETS --> RULES
+    subgraph RULES["Default event rules"]
+        direction TB
+        R1["stopped_vehicle<br/>dwell time + pixel motion threshold"]
+        R3["crowding<br/>person / vehicle count + confirm window + cooldown"]
+    end
+    DETS --> DRAW["Overlay (demo.py): boxes + IDs, 1 s trails,<br/>event banner, FPS/latency, optional pose"]
+    RULES --> DRAW
+    DRAW --> VID["alerts/RUN/DATE/annotated.mp4 -> outputs/*.mp4 (H.264)"]
+    RULES --> EVT["event.json, thumbnail, clip per event"]
+    RULES --> JSON["reports/RUN_events / _timeline / _artifacts / _summary.json"]
+    OV["Optional modes (experimental, not evaluated):<br/>open-vocabulary YOLO-World prompts, incident_enhanced<br/>(fire/smoke/pothole prompts, collision_candidate)"] -.-> RULES
+```
+
+## Error analysis
+
+Five data-backed failure cases (small people, occlusion, an ID switch, the rainy-night clip, the IoU collision rule) and an INT8 debugging note: [docs/ERROR_ANALYSIS.md](docs/ERROR_ANALYSIS.md).
+
+## Limitations
+
+- **COCO classes only, no fine-tuning.** Detection is the pretrained YOLO11s; there are no custom classes (fire, smoke, potholes, accidents are not detected by the default pipeline).
+- **Small and occluded people are mostly missed** (measured: 0 of 254 people under 50 px and 3.4 % of people with visibility < 0.3 are found at conf 0.35 on MOT17). Details: [docs/ERROR_ANALYSIS.md](docs/ERROR_ANALYSIS.md).
+- **Event rules are pixel-threshold heuristics with no event-level ground truth.** `stopped_vehicle` and `crowding` thresholds (6 px motion, 15 s dwell, 12 people) are not calibrated per camera, and I have not measured their precision or recall; the MOT17 and clip results above evaluate detection and tracking only.
+- **`collision_candidate` is a 2D box-IoU rule and is off in the default config.** It exists only in the experimental `incident_enhanced` mode; every candidate inspected in the demo clips was a detection artifact, not a collision (see the error analysis).
+- **Open-vocabulary and incident-enhanced modes are experimental** and were not evaluated or re-tested in this round of work; the open-vocabulary path may fall back to pretrained YOLO11s.
+- **Evaluation scope:** three MOT17 sequences (person only), no vehicle benchmark, no night/rain benchmark; the demo clips have no ground truth. MOT17 metrics are computed with py-motmetrics, not the official TrackEval/HOTA.
+- Speed numbers are single runs on one machine (Apple M5, 16 GB).
+- Training code remains in the repository but is not part of the demo path.
+
+## Other modes and CLI (experimental unless noted)
+
+Standard pretrained mode:
+
+```bash
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
+```
+
+Open-vocabulary mode:
+
+```bash
+python infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4
+```
+
+Incident-enhanced mode:
+
+```bash
+python infer_video.py --config configs/infer_incidents_pretrained.yaml --source demo.mp4
+```
+
+Optional RTSP demo:
+
+```bash
+python infer_rtsp.py --config configs/inference_rtsp.yaml
+```
+
+Useful CLI overrides:
+
+```bash
+python infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4 --prompts "fire,smoke,flood"
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --run-name my_demo
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --report-path reports/my_demo_summary.json
+```
+
+## Outputs
+
+Each run writes human-viewable and machine-readable artifacts:
+
+- `alerts/<run_name>/<date>/annotated.mp4`
+- `alerts/<run_name>/<date>/predictions.jsonl`
+- `alerts/<run_name>/<date>/predictions.csv`
+- `alerts/<run_name>/<date>/timeline.csv`
+- `alerts/<run_name>/<date>/events.json`
+- `reports/<run_name>_summary.json`
+- `reports/<run_name>_events.json`
+- `reports/<run_name>_timeline.json`
+- `reports/<run_name>_artifacts.json`
+
+The summary JSON is the main frontend-friendly entry point.
+
+## Frontend Integration Overview
+
+The frontend should treat `reports/<run_name>_summary.json` as the primary run record and use:
+
+- `reports/<run_name>_events.json` for event cards,
+- `reports/<run_name>_timeline.json` for per-frame / per-second timelines,
+- `reports/<run_name>_artifacts.json` for output paths,
+- `alerts/<run_name>/<date>/annotated.mp4` for playback.
+
+See [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md) for the API draft and example payloads.
+
+## Reference Docs
+
+- [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md)
+- [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md)
+- [`docs/REPO_GUIDE.md`](docs/REPO_GUIDE.md)
+- [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md)
+

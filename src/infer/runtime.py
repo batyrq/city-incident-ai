@@ -257,6 +257,11 @@ def _run_video_like_stream(
     detections_total = 0
     max_frames = int(config.get("runtime", {}).get("max_frames", 0) or 0)
     _reset_tracker_fallback()
+    viz_cfg = config.get("viz") or {}
+    overlay = None
+    if viz_cfg.get("enabled"):
+        from src.infer.overlay import Overlay
+        overlay = Overlay(viz_cfg, fps, device=config.get("runtime", {}).get("device"))
 
     with predictions_jsonl.open("w", encoding="utf-8") as json_handle, predictions_csv.open("w", encoding="utf-8", newline="") as csv_handle, timeline_csv.open("w", encoding="utf-8", newline="") as timeline_handle:
         pred_writer = csv.DictWriter(csv_handle, fieldnames=["frame_idx", "source", "track_id", "class_name", "confidence", "x1", "y1", "x2", "y2"])
@@ -303,10 +308,11 @@ def _run_video_like_stream(
             for det in incident_detections:
                 classes_seen.add(_normalize(det["class_name"]))
 
-            annotated = result.plot() if hasattr(result, "plot") else frame.copy()
-            if incident_detections:
-                annotated = _draw_incident_detections(annotated, incident_detections, spec, config)
-            writer.write(annotated)
+            if overlay is None:
+                annotated = result.plot() if hasattr(result, "plot") else frame.copy()
+                if incident_detections:
+                    annotated = _draw_incident_detections(annotated, incident_detections, spec, config)
+                writer.write(annotated)
 
             combined_prediction_rows = [
                 {"frame_idx": frame_idx, "source": "standard_tracking", **row} for row in detections
@@ -343,6 +349,11 @@ def _run_video_like_stream(
                 )
                 events.extend(incident_events)
                 event_records.extend(incident_event_records)
+            if overlay is not None:  # drawn after the rules so the banner shows events fired on this frame
+                annotated = overlay.draw(frame, detections, events, frame_idx, latencies_ms[-1])
+                if incident_detections:
+                    annotated = _draw_incident_detections(annotated, incident_detections, spec, config)
+                writer.write(annotated)
             timeline_writer.writerow(
                 {
                     "frame_idx": frame_idx,

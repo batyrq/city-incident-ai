@@ -1,0 +1,29 @@
+{
+  "frame": "calibration_frames()[5]",
+  "outputs": {
+    "fp32": {
+      "box_rows_min": 2.856201171875,
+      "box_rows_max": 637.2035522460938,
+      "class_score_max": 0.8176129460334778,
+      "person_score_max": 0.8176129460334778,
+      "distinct_class_score_values": 5883,
+      "AP50": 0.5504601679252399
+    },
+    "int8_full_graph": {
+      "box_rows_min": 2.6046125888824463,
+      "box_rows_max": 638.1300659179688,
+      "class_score_max": 0.0,
+      "person_score_max": 0.0,
+      "distinct_class_score_values": 1,
+      "AP50": 0.0
+    },
+    "int8_head_fp32": {
+      "box_rows_min": 2.830988883972168,
+      "box_rows_max": 636.6288452148438,
+      "class_score_max": 0.8032622337341309,
+      "person_score_max": 0.8032622337341309,
+      "distinct_class_score_values": 272,
+      "AP50": 0.5486331217238781
+    }
+  }
+}

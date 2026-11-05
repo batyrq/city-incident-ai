@@ -1,0 +1,469 @@
+{
+  "a_small_people": {
+    "selection_rule": "eval frame (every 5th) with the largest gain in hits on GT persons <= 100 px going from imgsz 640 to 960 (ties: more GT < 50 px)",
+    "sequence": "MOT17-02",
+    "frame": 401,
+    "hit_gain_le100px": 5,
+    "this_frame": {
+      "sequence": "MOT17-02",
+      "frame": 401,
+      "crop_xyxy": [
+        399,
+        352,
+        879,
+        622
+      ],
+      "hmax_px": 100,
+      "640": {
+        "gt_lt50_in_frame": 0,
+        "lt50_hit": 0,
+        "gt_50_100_in_frame": 18,
+        "50_100_hit": 0,
+        "gt_all_in_frame": 35,
+        "all_hit": 7,
+        "preds": 8,
+        "gt_le_hmax_in_crop": 12,
+        "le_hmax_in_crop_hit": 0
+      },
+      "960": {
+        "gt_lt50_in_frame": 0,
+        "lt50_hit": 0,
+        "gt_50_100_in_frame": 18,
+        "50_100_hit": 5,
+        "gt_all_in_frame": 35,
+        "all_hit": 12,
+        "preds": 14,
+        "gt_le_hmax_in_crop": 12,
+        "le_hmax_in_crop_hit": 3
+      }
+    },
+    "tiny_people_example": {
+      "selection_rule": "eval frame with the most GT persons < 50 px",
+      "sequence": "MOT17-02",
+      "frame": 506,
+      "this_frame": {
+        "sequence": "MOT17-02",
+        "frame": 506,
+        "crop_xyxy": [
+          346,
+          338,
+          826,
+          608
+        ],
+        "hmax_px": 49,
+        "640": {
+          "gt_lt50_in_frame": 5,
+          "lt50_hit": 0,
+          "gt_50_100_in_frame": 13,
+          "50_100_hit": 1,
+          "gt_all_in_frame": 34,
+          "all_hit": 9,
+          "preds": 10,
+          "gt_le_hmax_in_crop": 5,
+          "le_hmax_in_crop_hit": 0
+        },
+        "960": {
+          "gt_lt50_in_frame": 5,
+          "lt50_hit": 0,
+          "gt_50_100_in_frame": 13,
+          "50_100_hit": 4,
+          "gt_all_in_frame": 34,
+          "all_hit": 14,
+          "preds": 15,
+          "gt_le_hmax_in_crop": 5,
+          "le_hmax_in_crop_hit": 0
+        }
+      }
+    },
+    "all_eval_frames_hits_over_gt": {
+      "640": {
+        "lt50": {
+          "hit": 0,
+          "gt": 254,
+          "recall": 0.0
+        },
+        "50-100": {
+          "hit": 113,
+          "gt": 1632,
+          "recall": 0.06924019607843138
+        }
+      },
+      "960": {
+        "lt50": {
+          "hit": 2,
+          "gt": 254,
+          "recall": 0.007874015748031496
+        },
+        "50-100": {
+          "hit": 246,
+          "gt": 1632,
+          "recall": 0.15073529411764705
+        }
+      }
+    },
+    "benchmark_recall_at_conf_0.35_h<50px": {
+      "fp32_onnx_cpu": {
+        "count": 254,
+        "detected": 0,
+        "recall": 0.0
+      },
+      "s960_onnx_cpu": {
+        "count": 254,
+        "detected": 2,
+        "recall": 0.007874015748031496
+      }
+    },
+    "benchmark_recall_50_100px": {
+      "fp32_onnx_cpu": 0.06924019607843138,
+      "s960_onnx_cpu": 0.15073529411764705
+    },
+    "benchmark_latency_p50_ms": {
+      "fp32_onnx_cpu": 37.723375000041415,
+      "s960_onnx_cpu": 124.51795800006948
+    }
+  },
+  "b_occlusion": {
+    "selection_rule": "eval frame (every 5th) with the most GT persons of visibility < 0.3",
+    "sequence": "MOT17-02",
+    "frame": 441,
+    "crop_xyxy": [
+      307,
+      338,
+      867,
+      653
+    ],
+    "this_frame": {
+      "gt": 35,
+      "gt_vis_lt_0.3": 28,
+      "gt_vis_lt_0.3_hit": 1,
+      "gt_vis_ge_0.3": 7,
+      "gt_vis_ge_0.3_hit": 5
+    },
+    "detector_recall_by_visibility_conf_0.35_all_frames": {
+      "<0.3": {
+        "count": 22627,
+        "detected": 831,
+        "recall": 0.036726035267600654
+      },
+      "0.3-0.7": {
+        "count": 18826,
+        "detected": 3226,
+        "recall": 0.17135875916285986
+      },
+      ">0.7": {
+        "count": 30010,
+        "detected": 19442,
+        "recall": 0.6478507164278574
+      }
+    },
+    "tracker_output_recall_by_visibility": {
+      "a_conf0.35_default": {
+        "<0.3": {
+          "count": 22627,
+          "hit": 770,
+          "recall": 0.03403014098201264
+        },
+        "0.3-0.7": {
+          "count": 18826,
+          "hit": 3083,
+          "recall": 0.16376288112185275
+        },
+        ">0.7": {
+          "count": 30010,
+          "hit": 19268,
+          "recall": 0.642052649116961
+        }
+      },
+      "b_conf0.10_default": {
+        "<0.3": {
+          "count": 22627,
+          "hit": 1166,
+          "recall": 0.051531356344190565
+        },
+        "0.3-0.7": {
+          "count": 18826,
+          "hit": 4023,
+          "recall": 0.21369382768511633
+        },
+        ">0.7": {
+          "count": 30010,
+          "hit": 22925,
+          "recall": 0.7639120293235588
+        }
+      },
+      "c_conf0.10_buffer60": {
+        "<0.3": {
+          "count": 22627,
+          "hit": 1175,
+          "recall": 0.05192911123878552
+        },
+        "0.3-0.7": {
+          "count": 18826,
+          "hit": 4033,
+          "recall": 0.21422500796770425
+        },
+        ">0.7": {
+          "count": 30010,
+          "hit": 22932,
+          "recall": 0.7641452849050316
+        }
+      }
+    }
+  },
+  "c_id_switch": {
+    "selection_rule": "among ByteTrack (conf 0.35) ID switches with >=20 matched frames before (old ID) and after (new ID), the one whose GT box overlaps another GT person the most at the switch frame",
+    "total_switches_recomputed": 130,
+    "total_switches_in_tracking_json": 130,
+    "chosen": {
+      "seq": "MOT17-09",
+      "frame": 285,
+      "gt_id": 11,
+      "new_hyp": 71,
+      "prev_hyp": 38,
+      "last_prev_frame": 256,
+      "frames_matched_before_with_prev": 52,
+      "frames_matched_after_with_new": 63,
+      "gap_frames": 29,
+      "max_overlap_with_other_gt": 0.6337757198291323,
+      "vis_at_switch": 0.080179
+    },
+    "frames_shown": [
+      256,
+      284,
+      285,
+      295
+    ],
+    "crop_xyxy": [
+      1060,
+      233,
+      1418,
+      873
+    ]
+  },
+  "d_night_clip": {
+    "tracks_total": 193,
+    "frames_in_clip": 596,
+    "tracks_shorter_than_15_frames": 96,
+    "median_track_length_frames": 15.0,
+    "tracks_with_gaps": 103,
+    "tracks_with_more_than_one_class": 5,
+    "class_flip_breakdown": {
+      "car/person": 5
+    },
+    "boxes_total": 8047,
+    "boxes_in_short_tracks": 454,
+    "flip_example": {
+      "selection_rule": "track with >1 class whose second most frequent class has the most frames",
+      "track_id": 526,
+      "classes": {
+        "person": 2,
+        "car": 3
+      },
+      "first_frame": 434,
+      "last_frame": 451
+    },
+    "short_tracks_example_frame": {
+      "frame": 289,
+      "short_tracks_on_frame": 4
+    },
+    "umbrella_unfiltered_detector": {
+      "sampled_frames": 60,
+      "frames_with_umbrella_box": 60,
+      "umbrella_boxes": 271,
+      "in_demo_class_filter": false,
+      "frame_with_most": 451
+    }
+  },
+  "e_collision_rule": {
+    "overlap_iou_threshold": 0.35,
+    "rule_active_in_default_demo_config": false,
+    "rule_source": "src/infer/runtime.py _update_collision_candidates (called only from _update_incident_rules, i.e. mode incident_enhanced)",
+    "clips": {
+      "61": {
+        "frames": 1022,
+        "frames_with_vehicle_pair_iou_ge_thr": 2,
+        "pairs": 2,
+        "distinct_pairs": 2
+      },
+      "4332": {
+        "frames": 596,
+        "frames_with_vehicle_pair_iou_ge_thr": 26,
+        "pairs": 26,
+        "distinct_pairs": 9
+      }
+    },
+    "candidates_top10": [
+      {
+        "clip": "4332",
+        "frame": 3,
+        "ids": [
+          5,
+          19
+        ],
+        "classes": [
+          "car",
+          "truck"
+        ],
+        "iou": 0.951210861375347
+      },
+      {
+        "clip": "61",
+        "frame": 436,
+        "ids": [
+          242,
+          269
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.5732762376574817
+      },
+      {
+        "clip": "61",
+        "frame": 443,
+        "ids": [
+          379,
+          242
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.570315504503204
+      },
+      {
+        "clip": "4332",
+        "frame": 288,
+        "ids": [
+          240,
+          308
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.5253393933411533
+      },
+      {
+        "clip": "4332",
+        "frame": 289,
+        "ids": [
+          240,
+          308
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.5108838371910877
+      },
+      {
+        "clip": "4332",
+        "frame": 305,
+        "ids": [
+          259,
+          334
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.4945218714949115
+      },
+      {
+        "clip": "4332",
+        "frame": 428,
+        "ids": [
+          467,
+          487
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.4935987128870772
+      },
+      {
+        "clip": "4332",
+        "frame": 381,
+        "ids": [
+          390,
+          437
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.49253811955073074
+      },
+      {
+        "clip": "4332",
+        "frame": 380,
+        "ids": [
+          390,
+          437
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.4924555197427613
+      },
+      {
+        "clip": "4332",
+        "frame": 470,
+        "ids": [
+          499,
+          593
+        ],
+        "classes": [
+          "car",
+          "car"
+        ],
+        "iou": 0.4921907374086881
+      }
+    ],
+    "examples_in_image": [
+      {
+        "clip": "61",
+        "frame": 436,
+        "track_ids": [
+          242,
+          269
+        ],
+        "iou": 0.5732762376574817,
+        "classes": [
+          "car",
+          "car"
+        ]
+      },
+      {
+        "clip": "4332",
+        "frame": 288,
+        "track_ids": [
+          240,
+          308
+        ],
+        "iou": 0.5253393933411533,
+        "classes": [
+          "car",
+          "car"
+        ]
+      },
+      {
+        "clip": "4332",
+        "frame": 428,
+        "track_ids": [
+          467,
+          487
+        ],
+        "iou": 0.4935987128870772,
+        "classes": [
+          "car",
+          "car"
+        ]
+      }
+    ]
+  }
+}

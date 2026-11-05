@@ -95,7 +95,7 @@ def calibration_frames() -> list[np.ndarray]:
     return out
 
 
-def quantize_static_qdq() -> str:
+def quantize_static_qdq(keep_head_fp32: bool = True, dst_name: str = "yolo11s_int8_qdq.onnx") -> str:
     from onnxruntime.quantization import CalibrationDataReader, QuantFormat, QuantType, quantize_static
     from onnxruntime.quantization.shape_inference import quant_pre_process
     pre = str(WORK / "yolo11s_prep.onnx")
@@ -112,11 +112,11 @@ def quantize_static_qdq() -> str:
             x = next(self.it, None)
             return None if x is None else {"images": x}
 
-    dst = str(WORK / "yolo11s_int8_qdq.onnx")
+    dst = str(WORK / dst_name)
     # Detect-head decode (DFL, box arithmetic, concat of boxes 0-640 with class scores 0-1, sigmoid) stays FP32:
     # quantizing it with one shared activation scale rounds every class score to 0 (observed: AP50 0.000).
     exclude = [n.name for n in onnx.load(pre).graph.node
-               if n.name.startswith("/model.23/") and not (n.op_type in ("Conv", "Sigmoid", "Mul") and ("/cv2." in n.name or "/cv3." in n.name))]
+               if keep_head_fp32 and n.name.startswith("/model.23/") and not (n.op_type in ("Conv", "Sigmoid", "Mul") and ("/cv2." in n.name or "/cv3." in n.name))]
     quantize_static(pre, dst, Reader(), quant_format=QuantFormat.QDQ, activation_type=QuantType.QInt8,
                     weight_type=QuantType.QInt8, per_channel=True, nodes_to_exclude=exclude)
     _copy_metadata("yolo11s.onnx", dst)
