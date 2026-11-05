@@ -9,7 +9,7 @@ runtime:
   score_threshold: 0.35
   iou_threshold: 0.5
   clip_seconds_before: 3
-  max_frames: 12
+  max_frames: 0
 tracking:
   tracker: bytetrack.yaml
   stopped_vehicle_motion_threshold_px: 6.0
