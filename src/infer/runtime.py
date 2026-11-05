@@ -1155,7 +1155,7 @@ def _build_event_record(
     detections: list[dict[str, Any]],
     artifact_info: dict[str, Any],
     fps: float,
-    source: str,
+    source: str = "standard_tracking",
 ) -> dict[str, Any]:
     related_track_ids = sorted({int(det["track_id"]) for det in detections if det.get("track_id") is not None})
     return {
