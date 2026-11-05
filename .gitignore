@@ -33,3 +33,6 @@ demo.mp4
 Thumbs.db
 .idea/
 .vscode/
+
+# Local data
+data/
