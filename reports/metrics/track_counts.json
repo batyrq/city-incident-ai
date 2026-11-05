@@ -1,0 +1,19 @@
+{
+  "alerts/clip_61/2026-11-06/predictions.jsonl": {
+    "unique_tracks": 30,
+    "max_id": 682,
+    "by_dominant_class": {
+      "car": 21,
+      "person": 9
+    }
+  },
+  "alerts/clip_4332/2026-11-06/predictions.jsonl": {
+    "unique_tracks": 172,
+    "max_id": 309,
+    "by_dominant_class": {
+      "person": 105,
+      "car": 66,
+      "truck": 1
+    }
+  }
+}

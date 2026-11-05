@@ -1,0 +1,207 @@
+{
+  "detector": "yolo11s.onnx",
+  "conf": 0.35,
+  "imgsz": 640,
+  "nms_iou": 0.5,
+  "trackers": {
+    "bytetrack": {
+      "scores": {
+        "MOT17-02": {
+          "mota": 0.22851299714762396,
+          "idf1": 0.3231240428790199,
+          "num_switches": 37,
+          "num_false_positives": 322,
+          "num_misses": 13976,
+          "mostly_tracked": 8,
+          "mostly_lost": 39,
+          "partially_tracked": 15,
+          "num_fragmentations": 177,
+          "recall": 0.24783380872934718,
+          "precision": 0.934645829104932,
+          "num_objects": 18581,
+          "num_matches": 4568,
+          "gt_identities": 62,
+          "pred_identities": 84,
+          "pred_identities_before_ignore_filter": 91,
+          "pred_boxes_dropped_in_ignore_regions": 373
+        },
+        "MOT17-04": {
+          "mota": 0.29047248564880035,
+          "idf1": 0.4222348234256372,
+          "num_switches": 49,
+          "num_false_positives": 1033,
+          "num_misses": 32661,
+          "mostly_tracked": 8,
+          "mostly_lost": 45,
+          "partially_tracked": 30,
+          "num_fragmentations": 473,
+          "recall": 0.3132241310427487,
+          "precision": 0.9351497269131772,
+          "num_objects": 47557,
+          "num_matches": 14847,
+          "gt_identities": 83,
+          "pred_identities": 99,
+          "pred_identities_before_ignore_filter": 104,
+          "pred_boxes_dropped_in_ignore_regions": 458
+        },
+        "MOT17-09": {
+          "mota": 0.6159624413145539,
+          "idf1": 0.5665115272215607,
+          "num_switches": 44,
+          "num_false_positives": 295,
+          "num_misses": 1706,
+          "mostly_tracked": 9,
+          "mostly_lost": 4,
+          "partially_tracked": 13,
+          "num_fragmentations": 96,
+          "recall": 0.6796244131455399,
+          "precision": 0.924629535002555,
+          "num_objects": 5325,
+          "num_matches": 3575,
+          "gt_identities": 26,
+          "pred_identities": 54,
+          "pred_identities_before_ignore_filter": 64,
+          "pred_boxes_dropped_in_ignore_regions": 410
+        },
+        "OVERALL": {
+          "mota": 0.2986160670556791,
+          "idf1": 0.41187534421664085,
+          "num_switches": 130,
+          "num_false_positives": 1650,
+          "num_misses": 48343,
+          "mostly_tracked": 25,
+          "mostly_lost": 88,
+          "partially_tracked": 58,
+          "num_fragmentations": 746,
+          "recall": 0.32352406140240403,
+          "precision": 0.9333871618893823,
+          "num_objects": 71463,
+          "num_matches": 22990,
+          "gt_identities": 171,
+          "pred_identities": 237,
+          "tracker_ms_per_frame_mean": 1.1954228198905101
+        }
+      },
+      "timing": {
+        "MOT17-02": {
+          "mean_ms": 0.9913798541917155,
+          "median_ms": 0.9203124791383743,
+          "p95_ms": 1.4836666523478923,
+          "frames": 600
+        },
+        "MOT17-04": {
+          "mean_ms": 1.4455566302474057,
+          "median_ms": 1.291938009671867,
+          "p95_ms": 2.061252197017893,
+          "frames": 1050
+        },
+        "MOT17-09": {
+          "mean_ms": 0.9283471599753413,
+          "median_ms": 0.8914590580388904,
+          "p95_ms": 1.2978830141946671,
+          "frames": 525
+        }
+      }
+    },
+    "botsort": {
+      "scores": {
+        "MOT17-02": {
+          "mota": 0.22770572089769114,
+          "idf1": 0.31080678773444476,
+          "num_switches": 41,
+          "num_false_positives": 330,
+          "num_misses": 13979,
+          "mostly_tracked": 8,
+          "mostly_lost": 39,
+          "partially_tracked": 15,
+          "num_fragmentations": 175,
+          "recall": 0.24767235347936065,
+          "precision": 0.9330900243309003,
+          "num_objects": 18581,
+          "num_matches": 4561,
+          "gt_identities": 62,
+          "pred_identities": 85,
+          "pred_identities_before_ignore_filter": 92,
+          "pred_boxes_dropped_in_ignore_regions": 372
+        },
+        "MOT17-04": {
+          "mota": 0.29358454065647543,
+          "idf1": 0.4306708459999685,
+          "num_switches": 46,
+          "num_false_positives": 961,
+          "num_misses": 32588,
+          "mostly_tracked": 9,
+          "mostly_lost": 45,
+          "partially_tracked": 29,
+          "num_fragmentations": 487,
+          "recall": 0.3147591311478857,
+          "precision": 0.9396735718769617,
+          "num_objects": 47557,
+          "num_matches": 14923,
+          "gt_identities": 83,
+          "pred_identities": 98,
+          "pred_identities_before_ignore_filter": 103,
+          "pred_boxes_dropped_in_ignore_regions": 458
+        },
+        "MOT17-09": {
+          "mota": 0.6324882629107982,
+          "idf1": 0.5887698799091204,
+          "num_switches": 42,
+          "num_false_positives": 254,
+          "num_misses": 1661,
+          "mostly_tracked": 10,
+          "mostly_lost": 4,
+          "partially_tracked": 12,
+          "num_fragmentations": 95,
+          "recall": 0.688075117370892,
+          "precision": 0.9351710056151098,
+          "num_objects": 5325,
+          "num_matches": 3622,
+          "gt_identities": 26,
+          "pred_identities": 52,
+          "pred_identities_before_ignore_filter": 63,
+          "pred_boxes_dropped_in_ignore_regions": 411
+        },
+        "OVERALL": {
+          "mota": 0.30170857646614335,
+          "idf1": 0.41657055578068014,
+          "num_switches": 129,
+          "num_false_positives": 1545,
+          "num_misses": 48228,
+          "mostly_tracked": 27,
+          "mostly_lost": 88,
+          "partially_tracked": 56,
+          "num_fragmentations": 757,
+          "recall": 0.3251332857562655,
+          "precision": 0.9376513317191283,
+          "num_objects": 71463,
+          "num_matches": 23106,
+          "gt_identities": 171,
+          "pred_identities": 235,
+          "tracker_ms_per_frame_mean": 9.99047624386162
+        }
+      },
+      "timing": {
+        "MOT17-02": {
+          "mean_ms": 9.161629602313042,
+          "median_ms": 8.808249956928194,
+          "p95_ms": 11.892010318115354,
+          "frames": 600
+        },
+        "MOT17-04": {
+          "mean_ms": 10.636210863456308,
+          "median_ms": 9.669020480941981,
+          "p95_ms": 14.722462638746947,
+          "frames": 1050
+        },
+        "MOT17-09": {
+          "mean_ms": 9.646260309299189,
+          "median_ms": 9.403750067576766,
+          "p95_ms": 11.798091186210511,
+          "frames": 525
+        }
+      }
+    }
+  },
+  "note": "tracker timing = Ultralytics tracker.update() only (excludes detector); botsort includes GMC sparseOptFlow on the full 1080p frame"
+}

@@ -10,7 +10,10 @@ env/
 
 # Outputs and run artifacts
 alerts/
-reports/
+reports/*
+!reports/metrics/
+reports/metrics/mot_results/
+reports/metrics/cache/
 runs/
 models/*.json
 

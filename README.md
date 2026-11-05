@@ -164,3 +164,89 @@ See [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md) for the API d
 - [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md)
 - [`docs/REPO_GUIDE.md`](docs/REPO_GUIDE.md)
 - [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md)
+
+## Results
+
+Quality metrics for the default demo detector (`yolo11s.onnx`, `imgsz` 640, NMS IoU 0.5, person class) on the
+**MOT17 train** static-camera sequences MOT17-02, MOT17-04 and MOT17-09 (FRCNN folders; `gt.txt` is the same for
+all three detector variants). Every number below is rendered from `reports/metrics/detection.json` and
+`reports/metrics/tracking.json` by `eval/make_results_md.py`.
+
+### Detection (person, IoU 0.5 unless noted)
+
+| Sequence | GT boxes | AP50 | AP50:95 | P @0.35 | R @0.35 | best-F1 thr | best F1 (P / R) |
+|---|---:|---:|---:|---:|---:|---:|---|
+| MOT17-02 | 18581 | 0.427 | 0.225 | 92.2% | 25.2% | 0.082 | 0.502 (65.3% / 40.8%) |
+| MOT17-04 | 47557 | 0.594 | 0.328 | 93.9% | 31.8% | 0.031 | 0.688 (80.2% / 60.2%) |
+| MOT17-09 | 5325 | 0.715 | 0.427 | 92.0% | 69.4% | 0.370 | 0.792 (92.7% / 69.1%) |
+| overall | 71463 | 0.552 | 0.303 | 93.3% | 32.9% | 0.055 | 0.628 (74.5% / 54.2%) |
+
+Recall at conf 0.35 by GT visibility and box height (all three sequences pooled):
+
+| Bucket | GT boxes | Detected | Recall |
+|---|---:|---:|---:|
+| visibility <0.3 | 22627 | 831 | 3.7% |
+| visibility 0.3-0.7 | 18826 | 3226 | 17.1% |
+| visibility >0.7 | 30010 | 19442 | 64.8% |
+| height <50 px | 1276 | 0 | 0.0% |
+| height 50-100 px | 8149 | 595 | 7.3% |
+| height >100 px | 62038 | 22904 | 36.9% |
+
+### Tracking (person, conf 0.35, same detections for both trackers)
+
+| Tracker | Sequence | MOTA | IDF1 | IDsw | FP | FN | MT | ML | Pred IDs / GT IDs |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| ByteTrack | MOT17-02 | 22.9% | 32.3% | 37 | 322 | 13976 | 8 | 39 | 84 / 62 |
+| ByteTrack | MOT17-04 | 29.0% | 42.2% | 49 | 1033 | 32661 | 8 | 45 | 99 / 83 |
+| ByteTrack | MOT17-09 | 61.6% | 56.7% | 44 | 295 | 1706 | 9 | 4 | 54 / 26 |
+| ByteTrack | OVERALL | 29.9% | 41.2% | 130 | 1650 | 48343 | 25 | 88 | 237 / 171 |
+| BoT-SORT (no ReID) | MOT17-02 | 22.8% | 31.1% | 41 | 330 | 13979 | 8 | 39 | 85 / 62 |
+| BoT-SORT (no ReID) | MOT17-04 | 29.4% | 43.1% | 46 | 961 | 32588 | 9 | 45 | 98 / 83 |
+| BoT-SORT (no ReID) | MOT17-09 | 63.2% | 58.9% | 42 | 254 | 1661 | 10 | 4 | 52 / 26 |
+| BoT-SORT (no ReID) | OVERALL | 30.2% | 41.7% | 129 | 1545 | 48228 | 27 | 88 | 235 / 171 |
+
+Tracker-only time per frame (mean, ms; excludes the detector):
+
+| Tracker | MOT17-02 | MOT17-04 | MOT17-09 | overall |
+|---|---:|---:|---:|---:|
+| ByteTrack | 0.99 | 1.45 | 0.93 | 1.20 |
+| BoT-SORT | 9.16 | 10.64 | 9.65 | 9.99 |
+
+![PR curve](docs/pr_curve.png)
+
+Alignment sanity checks (GT green, predictions red, ignore regions yellow, 3 random frames per sequence) are in
+`docs/eval_check/`.
+
+### Reproduce
+
+```bash
+# data: MOT17 train, sequences 02/04/09 FRCNN only (extract just those members of https://motchallenge.net/data/MOT17.zip into data/mot/)
+pip install motmetrics matplotlib scipy        # evaluation extras
+python -m eval.eval_detection                  # -> reports/metrics/detection.json, docs/pr_curve.png (detector cache: data/mot/cache)
+python -m eval.eval_tracking                   # -> reports/metrics/tracking.json, reports/metrics/mot_results/<tracker>/<seq>.txt
+python -m eval.draw_check                      # -> docs/eval_check/
+python eval/make_results_md.py                 # prints the tables above
+```
+
+### How it is scored
+
+- **Ground truth** is `gt.txt` rows with class 1 (pedestrian) and consider flag 1.
+- **Ignore regions** are GT classes 2, 7, 8, 12 (person on vehicle, static person, distractor, reflection). In detection
+  eval a prediction that is not matched to a valid GT box but overlaps an ignore box at IoU > 0.5 counts as neither TP nor FP.
+  In tracking eval the same rule is applied per frame with TrackEval-style preprocessing (Hungarian match of predictions
+  to all GT boxes at IoU > 0.5, predictions matched to an ignore box are dropped).
+- **AP** is all-point interpolated, per IoU threshold, pooled over frames; "overall" pools all three sequences (it is not
+  a mean of per-sequence APs). The AP50:95 ignore test still uses IoU 0.5.
+- **Tracking** runs the detector once per frame at conf 0.35 and feeds identical detections to Ultralytics'
+  `BYTETracker` and `BOTSORT` with their stock yaml configs (BoT-SORT ReID off, GMC `sparseOptFlow`). Scoring uses py-motmetrics
+  (IoU >= 0.5 matching). Tracker time is `tracker.update()` only.
+
+### Caveats
+
+- **Out of domain.** YOLO11 is trained on COCO; MOT17 labels every person including heavily occluded and tiny ones
+  (see the visibility buckets above: a large share of GT boxes have visibility < 0.3), and the ONNX model's fixed 640x640 input forces 1920x1080 frames to be
+  downscaled, so recall at the demo threshold is low by construction. These are not "how good is YOLO11" numbers, they are "how does this exact demo pipeline do on MOT17".
+- **Three sequences only** (a small, scene-specific sample; MOT17-04 contributes most GT boxes and so dominates the pooled numbers).
+  BoT-SORT vs ByteTrack differences are within what you would expect from noise at this sample size.
+- **Metric implementation.** py-motmetrics MOTA/IDF1 and the ignore handling above follow the MOT Challenge convention but this is not the
+  official TrackEval/HOTA pipeline, so numbers can differ slightly from leaderboard values. `coco128` is not used for any evaluation (its images come from COCO train2017).
