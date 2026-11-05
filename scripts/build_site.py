@@ -71,7 +71,7 @@ def main() -> None:
     for f in (ROOT / "docs" / "failures").glob("*"):
         if f.suffix in (".jpg", ".png"):
             shutil.copy(f, SITE / "img" / f.name)
-    shutil.copy(ROOT / "docs" / "demo_pose.gif", SITE / "img" / "demo_pose.gif")
+    shutil.copy(ROOT / "docs" / "demo_pose_runner.gif", SITE / "img" / "demo_pose_runner.gif")
     pair = cv2.imread(str(ROOT / "docs" / "failures" / "a_small_people_640_vs_960.jpg"))
     half = pair.shape[1] // 2
     cv2.imwrite(str(SITE / "img" / "a_640.jpg"), pair[:, :half], [cv2.IMWRITE_JPEG_QUALITY, 90])
@@ -159,7 +159,7 @@ def main() -> None:
     ])
 
     fp, hp, fl = i8["outputs"]["fp32"], i8["outputs"]["int8_head_fp32"], i8["outputs"]["int8_full_graph"]
-    gait = Path(ROOT / "docs" / "demo_pose.gif").exists()
+    gait = Path(ROOT / "docs" / "demo_pose_runner.gif").exists()
     page = TEMPLATE
     repl = {
         "__STATS__": stats, "__TRK_TABLE__": trk_table, "__ABL_TABLE__": abl_table, "__SPD_TABLE__": spd_table, "__CASES__": cases,
@@ -296,7 +296,7 @@ footer{padding:60px 0 80px;color:var(--muted);font-size:13.5px;border-top:1px so
 
 <section id="gait"><div class="wrap"><h2><small>Next step</small>From city cameras to running gait</h2>
 <p class="lead">The same video-in, structured-data-out pipeline carries over to gait analysis. The pose overlay below is the first piece.</p>
-<div class="two"><div><img class="shot" src="img/demo_pose.gif" alt="pose skeleton overlay on a street clip" loading="lazy"></div>
+<div class="two"><div><img class="shot" src="img/demo_pose_runner.gif" alt="pose skeleton overlay on a runner on a treadmill, side view" loading="lazy"></div>
 <div><ul class="b"><li><b>Pose keypoints.</b> A pose model replaces the box: hips, knees and ankles per frame become the signal, and a runner-specific model can be fine-tuned on running footage.</li>
 <li><b>Single-person tracking.</b> The tracker would follow one runner and keep the identity through brief occlusions, which is the case the ablation above showed matters.</li>
 <li><b>Step events.</b> Foot strike and toe-off can be detected from ankle keypoint trajectories, the same way this pipeline turns tracks into events.</li>
@@ -320,7 +320,7 @@ document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{document.quer
 // live demo: iframe when the local server answers /demo, otherwise a card (static hosting, file://, server down)
 (async function(){
  const box=document.getElementById('live-box');
- const off=()=>{box.innerHTML='<div class="off"><div><h3>The live demo runs locally</h3><p class="muted">This page is a static copy, so there is no server behind it. Clone the repo and run one command; the demo opens in this section at <code>http://localhost:8000</code>.</p><pre class="cmd">make run</pre><p class="muted" style="font-size:13px">Upload a clip or pick one of the six example clips, optionally with pose skeletons (shown right).</p></div><img src="img/demo_pose.gif" alt="pose overlay example" loading="lazy"></div>';};
+ const off=()=>{box.innerHTML='<div class="off"><div><h3>The live demo runs locally</h3><p class="muted">This page is a static copy, so there is no server behind it. Clone the repo and run one command; the demo opens in this section at <code>http://localhost:8000</code>.</p><pre class="cmd">make run</pre><p class="muted" style="font-size:13px">Upload a clip or pick one of the six example clips, optionally with pose skeletons (shown right).</p></div><img src="img/demo_pose_runner.gif" alt="pose skeleton on a treadmill runner" loading="lazy"></div>';};
  try{
   const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),2500);
   const r=await fetch('demo/',{signal:ctl.signal,cache:'no-store'}); clearTimeout(t);
