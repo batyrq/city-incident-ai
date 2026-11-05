@@ -277,6 +277,7 @@ def _run_video_like_stream(
         )
         timeline_writer.writeheader()
 
+        loop_started = timeit.default_timer()
         while True:
             ok, frame = cap.read()
             if not ok:
@@ -373,6 +374,7 @@ def _run_video_like_stream(
 
     cap.release()
     writer.release()
+    loop_seconds = timeit.default_timer() - loop_started
     write_json(timeline_rows, timeline_json)
     write_json(event_records, events_json)
     write_json(timeline_rows, summary_timeline_path)
@@ -440,6 +442,9 @@ def _run_video_like_stream(
         "output_video_path": str(annotated_path),
         "summary_status": "completed",
     }
+    # End-to-end wall clock of the frame loop: decode + detect/track + rules + draw + write (excludes model load).
+    summary["pipeline_wall_seconds"] = round(loop_seconds, 3)
+    summary["pipeline_fps"] = round(frame_idx / loop_seconds, 3) if loop_seconds > 0 and frame_idx else None
     write_json(artifacts_payload, artifacts_json)
     write_json(artifacts_payload, summary_artifacts_path)
     write_json(summary, report_path)
@@ -570,6 +575,8 @@ def _infer_frame(detector: Any, frame: Any, spec: DemoSpec, config: dict[str, An
     common: dict[str, Any] = {"verbose": False, "conf": det_conf, "iou": iou, "imgsz": imgsz}
     if class_ids is not None:
         common["classes"] = class_ids
+    if runtime_cfg.get("device"):
+        common["device"] = runtime_cfg["device"]
     if not track:
         return detector.predict(source=frame, **common)[0]
     try:

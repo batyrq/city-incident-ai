@@ -233,6 +233,36 @@ Lowering the detector conf from 0.35 to 0.10 raised MOTA and IDF1 and the share 
 
 On the demo clips, unique drawn track IDs went from 30 to 34 (clip 61) and from 172 to 193 (clip 4332); these clips have no ground truth, so this is not an accuracy measure (`reports/metrics/track_counts_lowconf.json`).
 
+### Speed vs accuracy (this Mac, batch 1)
+
+Hardware/software: Apple M5 (10 cores), 16.0 GB, macOS 26.6, Python 3.12.14, torch 2.15.0, onnxruntime 1.31.1, ultralytics 8.4.202.
+
+| Variant | imgsz | size MB | model-only ms mean / p50 / p95 | detector total p50 ms | pipeline FPS | AP50 | recall@0.35 h<50 | 50-100 | >100 |
+|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
+| yolo11s PyTorch CPU | 640 | 18.4 | 40.8 / 36.2 / 59.9 | 37.1 | 22.2 | 0.547 | 0.0% | 6.4% | 35.9% |
+| yolo11s PyTorch MPS | 640 | 18.4 | 9.9 / 8.8 / 14.5 | 10.6 | 48.1 | 0.547 | 0.0% | 6.4% | 35.9% |
+| yolo11s ONNX CPU (repo) | 640 | 36.3 | 42.4 / 37.7 / 70.6 | 39.2 | 21.1 | 0.550 | 0.0% | 6.9% | 36.7% |
+| yolo11s ONNX CoreML EP | 640 | 36.3 | 14.3 / 14.6 / 15.8 | 18.8 | 29.2 | 0.551 | 0.0% | 6.9% | 37.2% |
+| yolo11s ONNX INT8 static QDQ CPU | 640 | 9.8 | 44.1 / 42.1 / 58.4 | 44.8 | 17.7 | 0.549 | 0.0% | 6.5% | 36.9% |
+| yolo11s ONNX INT8 dynamic CPU | 640 | 9.4 | 68.6 / 66.0 / 83.7 | 67.6 | 10.8 | 0.543 | 0.0% | 6.9% | 37.3% |
+| yolo11n ONNX CPU | 640 | 10.2 | 25.1 / 23.6 / 35.4 | 25.2 | 32.6 | 0.515 | 0.0% | 5.6% | 34.0% |
+| yolo11s ONNX CPU imgsz 960 | 960 | 36.5 | 128.8 / 124.5 / 164.2 | 127.8 | 8.0 | 0.616 | 0.8% | 15.1% | 48.6% |
+
+- **Model-only** = wall time of the backend forward pass (MPS synchronised; letterbox and NMS excluded), 300 frames of `data/videos/mixkit-61.mp4` after 20 warm-up frames. **Detector total** adds preprocessing and NMS. **Pipeline FPS** = the normal demo path (decode + detect + ByteTrack + rules + draw + write mp4) over the first 300 frames of the same clip, tracker `detector_conf` 0.1 / display 0.35.
+- **Accuracy** uses MOT17-02/04/09 (FRCNN folders) **every 5th frame only** (435 frames, 14,287 GT person boxes), person class, conf floor 0.01, NMS IoU 0.5, same matcher and AP code as `eval/eval_detection.py`. Recall columns are at conf 0.35 by GT box height (254 / 1,632 / 12,401 boxes). Because of the frame subset, AP50 for the repo model is 0.550 here vs 0.552 in the full evaluation above.
+- Each number is a single run (no repeats); CPU p95 values are well above p50, so treat differences of a few ms as noise.
+- Static INT8: QDQ, per-channel, calibrated on 100 MOT17 frames that are not among the evaluation frames. The detect-head decode nodes are kept FP32. A first attempt that quantized the whole graph gave **AP50 0.000**: the head concatenates boxes (0-640) with class scores (0-1), and the shared activation scale rounds every class score to 0 (verified: max class score 0.0 vs 0.82 in FP32). Dynamic INT8 is included for completeness.
+
+![speed vs AP50](docs/speed_vs_ap.png)
+
+Takeaways (from the table above):
+
+1. **CPU real-time:** yolo11n ONNX at 640 is the only CPU-only variant above 30 pipeline FPS (32.6 FPS, 23.6 ms p50) and costs 0.035 AP50 against the repo yolo11s ONNX (0.515 vs 0.550); the yolo11s CPU variants run 17.7-22.2 FPS. With the Apple GPU, PyTorch on MPS gives 48.1 pipeline FPS at AP50 0.547, and ONNX with the CoreML provider gives 29.2 FPS at 0.551.
+2. **INT8 did not help on this CPU:** static INT8 is 9.8 MB vs 36.3 MB, with AP50 0.549 vs 0.550, but its p50 is 42.1 ms vs 37.7 ms and its pipeline FPS 17.7 vs 21.1; dynamic INT8 is slower still (66.0 ms p50, 10.8 FPS).
+3. **imgsz 960:** raises AP50 from 0.550 to 0.616 and recall at conf 0.35 from 0.0% to 0.8% (h<50 px), 6.9% to 15.1% (50-100 px) and 36.7% to 48.6% (>100 px), at 3.3x the p50 latency (124.5 vs 37.7 ms) and 8.0 vs 21.1 pipeline FPS. People under 50 px are still almost entirely missed.
+
+Reproduce: `python -m eval.benchmark_speed` (writes `reports/metrics/speed.json` and `docs/speed_vs_ap.png`; needs `yolo11s.pt` and `yolo11n.pt` in the repo root, derived models go to `data/bench_models/`); table: `python -m eval.speed_table`.
+
 ### Reproduce
 
 ```bash

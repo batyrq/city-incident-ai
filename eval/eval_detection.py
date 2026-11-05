@@ -39,7 +39,7 @@ def run_detector(seq: str, conf: float, imgsz: int, iou_nms: float) -> tuple[np.
     return dets, {"mean_ms_per_frame": float(np.mean(times)), "frames": n}
 
 
-def match_sequence(seq: str, dets: np.ndarray) -> dict:
+def match_sequence(seq: str, dets: np.ndarray, frames: list[int] | None = None) -> dict:
     """Greedy per-frame matching (descending confidence) at every IoU threshold.
 
     Returns per-prediction records and per-GT match info at IoU 0.5.
@@ -49,7 +49,8 @@ def match_sequence(seq: str, dets: np.ndarray) -> dict:
     det_f = per_frame({"frame": dets[:, 0].astype(int), "xyxy": dets[:, 1:5], "conf": dets[:, 5]}) if len(dets) else {}
     recs = {t: {"conf": [], "status": []} for t in IOU_THRESHOLDS}  # status: 1 TP, 0 FP, -1 ignored
     gt_info = {"vis": [], "height": [], "matched_conf": []}  # matched_conf: conf of matching pred at IoU 0.5 or -1
-    for fr in range(1, seq_info(seq)["length"] + 1):
+    frame_list = list(range(1, seq_info(seq)["length"] + 1)) if frames is None else list(frames)
+    for fr in frame_list:
         g = gt_f.get(fr); ig = ign_f.get(fr); d = det_f.get(fr)
         gx = g["xyxy"] if g else np.zeros((0, 4))
         ng = len(gx)
@@ -81,7 +82,7 @@ def match_sequence(seq: str, dets: np.ndarray) -> dict:
                     status = 0
                 recs[t]["conf"].append(float(pc[p])); recs[t]["status"].append(status)
         gt_info["matched_conf"].extend(mconf.tolist())
-    return {"recs": recs, "gt": gt_info, "n_gt": int(len(gt["valid"]["frame"])), "gt_stats": gt["stats"]}
+    return {"recs": recs, "gt": gt_info, "n_gt": int(sum(len(gt_f[f]["frame"]) for f in frame_list if f in gt_f)), "gt_stats": gt["stats"]}
 
 
 def merge(parts: list[dict]) -> dict:

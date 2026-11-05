@@ -1,0 +1,538 @@
+{
+  "environment": {
+    "chip": "Apple M5",
+    "cpu_cores": 10,
+    "ram_gb": 16.0,
+    "macos": "26.6",
+    "python": "3.12.14",
+    "torch": "2.15.0",
+    "onnxruntime": "1.31.1",
+    "onnxruntime_providers": [
+      "CoreMLExecutionProvider",
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "ultralytics": "8.4.202",
+    "torch_mps_available": true
+  },
+  "protocol": {
+    "clip": "data/videos/mixkit-61.mp4",
+    "warmup_frames": 20,
+    "timed_frames": 300,
+    "accuracy_frame_stride": 5,
+    "accuracy_conf_floor": 0.01,
+    "recall_conf": 0.35,
+    "nms_iou": 0.5,
+    "batch": 1,
+    "model_only_definition": "AutoBackend.forward wall time, MPS synchronised; excludes letterbox and NMS",
+    "pipeline_definition": "run_demo_video frame loop, first 300 frames, tracker detector_conf 0.1 / display 0.35, annotated mp4 written"
+  },
+  "variants": {
+    "fp32_pt_cpu": {
+      "label": "yolo11s PyTorch CPU",
+      "weights": "data/bench_models/yolo11s.pt",
+      "imgsz": 640,
+      "device": "cpu",
+      "size_mb": 18.4,
+      "latency": {
+        "model_only": {
+          "mean_ms": 40.81664914666362,
+          "p50_ms": 36.22983400009616,
+          "p95_ms": 59.87912499995218,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 41.78682664333868,
+          "p50_ms": 37.10324999997283,
+          "p95_ms": 61.126166999883935,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5469498631228409,
+        "AP50_95": 0.2993856678320891,
+        "at_conf_0.35": {
+          "precision": 0.9296922763399226,
+          "recall": 0.31931126198642124,
+          "tp": 4562,
+          "fp": 345,
+          "fn": 9725
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 105,
+            "recall": 0.06433823529411764
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4457,
+            "recall": 0.35940649947584874
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 13.493,
+        "fps": 22.234,
+        "detect_track_mean_ms": 40.371,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok"
+    },
+    "fp32_pt_mps": {
+      "label": "yolo11s PyTorch MPS",
+      "weights": "data/bench_models/yolo11s.pt",
+      "imgsz": 640,
+      "device": "mps",
+      "size_mb": 18.4,
+      "latency": {
+        "model_only": {
+          "mean_ms": 9.889965436659622,
+          "p50_ms": 8.794249999937165,
+          "p95_ms": 14.505500000041138,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 11.877772189995236,
+          "p50_ms": 10.62275000003865,
+          "p95_ms": 16.96399999991627,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5469497119164957,
+        "AP50_95": 0.2993856147449849,
+        "at_conf_0.35": {
+          "precision": 0.9296922763399226,
+          "recall": 0.31931126198642124,
+          "tp": 4562,
+          "fp": 345,
+          "fn": 9725
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 105,
+            "recall": 0.06433823529411764
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4457,
+            "recall": 0.35940649947584874
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 6.236,
+        "fps": 48.111,
+        "detect_track_mean_ms": 16.438,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok"
+    },
+    "fp32_onnx_cpu": {
+      "label": "yolo11s ONNX CPU (repo)",
+      "weights": "yolo11s.onnx",
+      "imgsz": 640,
+      "device": "cpu",
+      "size_mb": 36.3,
+      "latency": {
+        "model_only": {
+          "mean_ms": 42.39392178333219,
+          "p50_ms": 37.723375000041415,
+          "p95_ms": 70.60079199982283,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 44.175513196654116,
+          "p50_ms": 39.20487499999581,
+          "p95_ms": 73.5799589999715,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5504601679252399,
+        "AP50_95": 0.3017022421977194,
+        "at_conf_0.35": {
+          "precision": 0.9310207336523126,
+          "recall": 0.3268705816476517,
+          "tp": 4670,
+          "fp": 346,
+          "fn": 9617
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 113,
+            "recall": 0.06924019607843138
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4557,
+            "recall": 0.36747036529312155
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 14.242,
+        "fps": 21.065,
+        "detect_track_mean_ms": 41.536,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok"
+    },
+    "fp32_onnx_coreml": {
+      "label": "yolo11s ONNX CoreML EP",
+      "weights": "yolo11s.onnx",
+      "imgsz": 640,
+      "device": "mps",
+      "size_mb": 36.3,
+      "latency": {
+        "model_only": {
+          "mean_ms": 14.306258313333728,
+          "p50_ms": 14.627457999949911,
+          "p95_ms": 15.837584000109928,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 18.672249313343247,
+          "p50_ms": 18.780083999899944,
+          "p95_ms": 20.18191599995589,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5512996256437523,
+        "AP50_95": 0.3020873847225951,
+        "at_conf_0.35": {
+          "precision": 0.9298798503052984,
+          "recall": 0.3304402603765661,
+          "tp": 4721,
+          "fp": 356,
+          "fn": 9566
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 113,
+            "recall": 0.06924019607843138
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4608,
+            "recall": 0.37158293685993066
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 10.262,
+        "fps": 29.233,
+        "detect_track_mean_ms": 27.018,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok"
+    },
+    "int8_onnx_cpu": {
+      "label": "yolo11s ONNX INT8 static QDQ CPU",
+      "weights": "data/bench_models/yolo11s_int8_qdq.onnx",
+      "imgsz": 640,
+      "device": "cpu",
+      "size_mb": 9.8,
+      "latency": {
+        "model_only": {
+          "mean_ms": 44.08997472665836,
+          "p50_ms": 42.08879199995863,
+          "p95_ms": 58.350916999870606,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 46.48828401667212,
+          "p50_ms": 44.81341600012456,
+          "p95_ms": 61.37570900000355,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5486331217238781,
+        "AP50_95": 0.30059985195053257,
+        "at_conf_0.35": {
+          "precision": 0.9367747098839536,
+          "recall": 0.3277105060544551,
+          "tp": 4682,
+          "fp": 316,
+          "fn": 9605
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 106,
+            "recall": 0.06495098039215687
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4576,
+            "recall": 0.3690024997984033
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 16.975,
+        "fps": 17.673,
+        "detect_track_mean_ms": 48.17,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok",
+      "quantization": "static QDQ, QInt8 act/weights, per-channel, 100 MOT17 calibration frames (min-max); 25 detect-head decode nodes kept FP32 (without this, class scores all quantize to 0 and AP50 is 0.000)"
+    },
+    "int8dyn_onnx_cpu": {
+      "label": "yolo11s ONNX INT8 dynamic CPU",
+      "weights": "data/bench_models/yolo11s_int8_dyn.onnx",
+      "imgsz": 640,
+      "device": "cpu",
+      "size_mb": 9.4,
+      "latency": {
+        "model_only": {
+          "mean_ms": 68.57662930000137,
+          "p50_ms": 66.03666699993482,
+          "p95_ms": 83.68795799992768,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 70.2771544400063,
+          "p50_ms": 67.64100000009421,
+          "p95_ms": 85.92379100014114,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5428082556240116,
+        "AP50_95": 0.29412019099246745,
+        "at_conf_0.35": {
+          "precision": 0.9263240179792848,
+          "recall": 0.3317701406873381,
+          "tp": 4740,
+          "fp": 377,
+          "fn": 9547
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 112,
+            "recall": 0.06862745098039216
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4628,
+            "recall": 0.3731957100233852
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 27.688,
+        "fps": 10.835,
+        "detect_track_mean_ms": 83.786,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok",
+      "quantization": "dynamic quantization, QUInt8 weights"
+    },
+    "n_onnx_cpu": {
+      "label": "yolo11n ONNX CPU",
+      "weights": "data/bench_models/yolo11n.onnx",
+      "imgsz": 640,
+      "device": "cpu",
+      "size_mb": 10.2,
+      "latency": {
+        "model_only": {
+          "mean_ms": 25.08293543000188,
+          "p50_ms": 23.565707999978258,
+          "p95_ms": 35.40795800017804,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 26.947321820002042,
+          "p50_ms": 25.16012499995668,
+          "p95_ms": 38.26891599987903,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.5153892767318196,
+        "AP50_95": 0.2718684079551624,
+        "at_conf_0.35": {
+          "precision": 0.9344048653344917,
+          "recall": 0.3011128998390145,
+          "tp": 4302,
+          "fp": 302,
+          "fn": 9985
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 0,
+            "recall": 0.0
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 91,
+            "recall": 0.05575980392156863
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 4211,
+            "recall": 0.33956938956535765
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 9.212,
+        "fps": 32.568,
+        "detect_track_mean_ms": 24.154,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok"
+    },
+    "s960_onnx_cpu": {
+      "label": "yolo11s ONNX CPU imgsz 960",
+      "weights": "data/bench_models/yolo11s_960.onnx",
+      "imgsz": 960,
+      "device": "cpu",
+      "size_mb": 36.5,
+      "latency": {
+        "model_only": {
+          "mean_ms": 128.77860676000032,
+          "p50_ms": 124.51795800006948,
+          "p95_ms": 164.16066700003284,
+          "n": 300
+        },
+        "detector_total_incl_pre_nms": {
+          "mean_ms": 132.26773113334426,
+          "p50_ms": 127.84733400008008,
+          "p95_ms": 167.88799999994808,
+          "n": 300
+        }
+      },
+      "accuracy": {
+        "frames_evaluated": 435,
+        "n_gt_boxes": 14287,
+        "AP50": 0.6160220475927822,
+        "AP50_95": 0.3504946919380971,
+        "at_conf_0.35": {
+          "precision": 0.9322839322839322,
+          "recall": 0.43942045215930564,
+          "tp": 6278,
+          "fp": 456,
+          "fn": 8009
+        },
+        "recall_by_height_px": {
+          "<50": {
+            "count": 254,
+            "detected": 2,
+            "recall": 0.007874015748031496
+          },
+          "50-100": {
+            "count": 1632,
+            "detected": 246,
+            "recall": 0.15073529411764705
+          },
+          ">100": {
+            "count": 12401,
+            "detected": 6030,
+            "recall": 0.48625110878154987
+          }
+        }
+      },
+      "pipeline": {
+        "frames": 300,
+        "wall_seconds": 37.551,
+        "fps": 7.989,
+        "detect_track_mean_ms": 117.122,
+        "tracker_fallback": {
+          "frames": 0,
+          "first_error": null
+        },
+        "events": {}
+      },
+      "status": "ok"
+    }
+  }
+}

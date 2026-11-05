@@ -21,6 +21,7 @@ def main() -> None:
     parser.add_argument("--model", default=None, help="Optional checkpoint/weights override.")
     parser.add_argument("--prompts", default=None, help="Comma-separated prompts for open-vocabulary mode.")
     parser.add_argument("--classes", default=None, help="Comma-separated class names to keep (e.g. person,car), or 'all' for no filter.")
+    parser.add_argument("--max-frames", type=int, default=None, help="Stop after N frames (0 = whole video). Overrides runtime.max_frames.")
     args = parser.parse_args()
 
     config = _apply_overrides(load_yaml(args.config), args)
@@ -61,6 +62,8 @@ def _apply_overrides(config: dict[str, Any], args: argparse.Namespace) -> dict[s
         config["prompts"] = [item.strip() for item in args.prompts.split(",") if item.strip()]
     if args.model:
         config["model_weights"] = args.model
+    if args.max_frames is not None:
+        config.setdefault("runtime", {})["max_frames"] = args.max_frames
     if args.classes:
         config["classes"] = [item.strip() for item in args.classes.split(",") if item.strip()]
     return config
