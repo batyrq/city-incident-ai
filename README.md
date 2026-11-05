@@ -69,7 +69,7 @@ Linux/macOS:
 ```bash
 bash scripts/bootstrap_env.sh
 source .venv/bin/activate
-py -3 infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
 ```
 
 Windows PowerShell:
@@ -77,7 +77,14 @@ Windows PowerShell:
 ```powershell
 .\scripts\bootstrap_env.ps1
 .\.venv\Scripts\Activate.ps1
-py -3 infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
+```
+
+Manual install (what bootstrap does, plus the ONNX runtime pieces the YOLO11s ONNX path needs; Python 3.11/3.12):
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt ultralytics onnx onnxruntime lap
 ```
 
 If `demo.mp4` does not exist, the run will finish with a skipped summary instead of crashing.
@@ -87,33 +94,33 @@ If `demo.mp4` does not exist, the run will finish with a skipped summary instead
 Standard pretrained mode:
 
 ```bash
-py -3 infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4
 ```
 
 Open-vocabulary mode:
 
 ```bash
-py -3 infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4
+python infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4
 ```
 
 Incident-enhanced mode:
 
 ```bash
-py -3 infer_video.py --config configs/infer_incidents_pretrained.yaml --source demo.mp4
+python infer_video.py --config configs/infer_incidents_pretrained.yaml --source demo.mp4
 ```
 
 Optional RTSP demo:
 
 ```bash
-py -3 infer_rtsp.py --config configs/inference_rtsp.yaml
+python infer_rtsp.py --config configs/inference_rtsp.yaml
 ```
 
 Useful CLI overrides:
 
 ```bash
-py -3 infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4 --prompts "fire,smoke,flood"
-py -3 infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --run-name my_demo
-py -3 infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --report-path reports/my_demo_summary.json
+python infer_video.py --config configs/infer_open_vocab.yaml --source demo.mp4 --prompts "fire,smoke,flood"
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --run-name my_demo
+python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source demo.mp4 --report-path reports/my_demo_summary.json
 ```
 
 ## Outputs

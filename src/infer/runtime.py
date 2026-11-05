@@ -676,15 +676,15 @@ def _update_stopped_vehicle(
             continue
         track_id = int(det["track_id"])
         center = ((_as_float(det["x1"]) + _as_float(det["x2"])) / 2.0, (_as_float(det["y1"]) + _as_float(det["y2"])) / 2.0)
+        frame_number = max(1, int(round(now_ts * fps)))
+        # A track starts "not moving" at the frame it is first seen, not at frame 0;
+        # otherwise any vehicle first seen after dwell_seconds fires immediately.
         track = state.track_state.setdefault(
             track_id,
-            {"class_name": det["class_name"], "first_seen_frame": 0, "last_move_frame": 0, "last_center": center, "alerted": False},
+            {"class_name": det["class_name"], "first_seen_frame": frame_number, "last_move_frame": frame_number, "last_center": center, "alerted": False},
         )
-        if track["first_seen_frame"] == 0:
-            track["first_seen_frame"] = max(1, int(round(now_ts * fps)))
         prev_center = track["last_center"]
         moved = math.hypot(center[0] - prev_center[0], center[1] - prev_center[1])
-        frame_number = max(1, int(round(now_ts * fps)))
         if moved > motion_px:
             track["last_move_frame"] = frame_number
         track["last_center"] = center
