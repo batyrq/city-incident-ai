@@ -6,6 +6,7 @@ import math
 import time
 import timeit
 import uuid
+import logging
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -255,6 +256,7 @@ def _run_video_like_stream(
     track_ids_seen: set[int] = set()
     detections_total = 0
     max_frames = int(config.get("runtime", {}).get("max_frames", 0) or 0)
+    _reset_tracker_fallback()
 
     with predictions_jsonl.open("w", encoding="utf-8") as json_handle, predictions_csv.open("w", encoding="utf-8", newline="") as csv_handle, timeline_csv.open("w", encoding="utf-8", newline="") as timeline_handle:
         pred_writer = csv.DictWriter(csv_handle, fieldnames=["frame_idx", "source", "track_id", "class_name", "confidence", "x1", "y1", "x2", "y2"])
@@ -416,6 +418,7 @@ def _run_video_like_stream(
         incident_tracks_involved=incident_track_ids,
         stopped_vehicle_candidates=state.event_counts.get("stopped_vehicle", 0),
         collision_candidates=state.event_counts.get("collision_candidate", 0),
+        tracker_fallback=dict(_TRACKER_FALLBACK),
     )
     artifacts_payload = {
         "run_name": run_name,
@@ -542,23 +545,48 @@ def _resolve_class_ids(detector: Any, config: dict[str, Any]) -> list[int] | Non
     return sorted(by_name[name] for name in wanted)
 
 
+logger = logging.getLogger(__name__)
+
+# Tracker-fallback bookkeeping for the current run (reset in _run_video_like_stream).
+_TRACKER_FALLBACK: dict[str, Any] = {"frames": 0, "first_error": None}
+
+
+def _reset_tracker_fallback() -> None:
+    _TRACKER_FALLBACK.update(frames=0, first_error=None)
+
+
 def _infer_frame(detector: Any, frame: Any, spec: DemoSpec, config: dict[str, Any], track: bool = True) -> Any:
+    """Run detector (+ tracker). Boxes below runtime.score_threshold (the display/event threshold) are dropped
+    from the returned result; if tracking.detector_conf is set lower, the tracker still sees those boxes."""
     runtime_cfg = config.get("runtime", {})
     tracking_cfg = config.get("tracking", {})
-    conf = runtime_cfg.get("score_threshold", 0.35)
+    display_conf = float(runtime_cfg.get("score_threshold", 0.35))
+    det_conf = tracking_cfg.get("detector_conf")
+    det_conf = min(float(det_conf), display_conf) if (track and det_conf is not None) else display_conf
     iou = runtime_cfg.get("iou_threshold", 0.5)
     imgsz = runtime_cfg.get("imgsz", 640)
     tracker_cfg = spec.tracker_config or tracking_cfg.get("tracker", "bytetrack.yaml")
     class_ids = _resolve_class_ids(detector, config)
-    common: dict[str, Any] = {"verbose": False, "conf": conf, "iou": iou, "imgsz": imgsz}
+    common: dict[str, Any] = {"verbose": False, "conf": det_conf, "iou": iou, "imgsz": imgsz}
     if class_ids is not None:
         common["classes"] = class_ids
     if not track:
         return detector.predict(source=frame, **common)[0]
     try:
-        return detector.track(source=frame, persist=True, tracker=tracker_cfg, **common)[0]
-    except Exception:
-        return detector.predict(source=frame, **common)[0]
+        result = detector.track(source=frame, persist=True, tracker=tracker_cfg, **common)[0]
+    except Exception as exc:
+        _TRACKER_FALLBACK["frames"] += 1
+        if _TRACKER_FALLBACK["first_error"] is None:
+            _TRACKER_FALLBACK["first_error"] = f"{type(exc).__name__}: {exc}"
+            logger.warning(
+                "Tracker failed (%s); falling back to detection without track IDs for the affected frames. "
+                "Logged once per run; see 'tracker_fallback' in the summary JSON.",
+                _TRACKER_FALLBACK["first_error"],
+            )
+        result = detector.predict(source=frame, **common)[0]
+    if det_conf < display_conf and result.boxes is not None and len(result.boxes):
+        result = result[result.boxes.conf >= display_conf]
+    return result
 
 
 def _extract_detections(result: Any, frame_idx: int, fps: float) -> list[dict[str, Any]]:
@@ -1221,6 +1249,7 @@ def _build_summary(
     incident_tracks_involved: list[int] | None = None,
     stopped_vehicle_candidates: int | None = None,
     collision_candidates: int | None = None,
+    tracker_fallback: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     summary = {
         "status": status,
@@ -1261,5 +1290,6 @@ def _build_summary(
         "mean_latency_ms": mean_latency_ms,
         "fps_estimate": fps_estimate,
         "alert_counts": event_counts,
+        "tracker_fallback": tracker_fallback if tracker_fallback is not None else {"frames": 0, "first_error": None},
     }
     return summary

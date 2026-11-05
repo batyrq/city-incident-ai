@@ -217,6 +217,22 @@ Tracker-only time per frame (mean, ms; excludes the detector):
 Alignment sanity checks (GT green, predictions red, ignore regions yellow, 3 random frames per sequence) are in
 `docs/eval_check/`.
 
+### Detector threshold vs ByteTrack (person, MOT17-02/04/09 pooled)
+
+ByteTrack's stock `bytetrack.yaml` has `track_high_thresh 0.25`, `track_low_thresh 0.1`, `new_track_thresh 0.25`, `track_buffer 30`. Its second association pass uses boxes scoring between 0.1 and 0.25, so a detector run at conf 0.35 never feeds it anything. The tracker is given the lower-confidence boxes while drawing and events still use only boxes >= 0.35 (`tracking.detector_conf` vs `runtime.score_threshold`).
+
+| Config | MOTA | IDF1 | IDsw | FP | FN | MT | ML | Pred IDs / GT IDs | Recall <0.3 vis | 0.3-0.7 vis | >0.7 vis |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|
+| a: detector conf 0.35, stock yaml (previous demo) | 29.9% | 41.2% | 130 | 1650 | 48343 | 25 | 88 | 237 / 171 | 3.4% | 16.4% | 64.2% |
+| b: detector conf 0.10, stock yaml (new demo default) | 35.7% | 44.8% | 156 | 2465 | 43351 | 29 | 80 | 288 / 171 | 5.2% | 21.4% | 76.4% |
+| c: detector conf 0.10, `track_buffer: 60` | 35.7% | 45.0% | 157 | 2463 | 43325 | 29 | 80 | 282 / 171 | 5.2% | 21.4% | 76.4% |
+
+Per-sequence numbers: `reports/metrics/tracking_conf_ablation.json` (`python -m eval.eval_tracking --conf-ablation`). Recall by visibility is computed from tracker output (Hungarian match, IoU >= 0.5), not from raw detections.
+
+Lowering the detector conf from 0.35 to 0.10 raised MOTA and IDF1 and the share of GT boxes covered at every visibility level, at the cost of more false positives, more ID switches and more predicted identities. Raising `track_buffer` to 60 changed the overall result very little compared with b, and MOT17-09 alone scored slightly lower under b and c than under a (see the JSON).
+
+On the demo clips, unique drawn track IDs went from 30 to 34 (clip 61) and from 172 to 193 (clip 4332); these clips have no ground truth, so this is not an accuracy measure (`reports/metrics/track_counts_lowconf.json`).
+
 ### Reproduce
 
 ```bash
@@ -224,6 +240,7 @@ Alignment sanity checks (GT green, predictions red, ignore regions yellow, 3 ran
 pip install motmetrics matplotlib scipy        # evaluation extras
 python -m eval.eval_detection                  # -> reports/metrics/detection.json, docs/pr_curve.png (detector cache: data/mot/cache)
 python -m eval.eval_tracking                   # -> reports/metrics/tracking.json, reports/metrics/mot_results/<tracker>/<seq>.txt
+python -m eval.eval_tracking --conf-ablation   # -> reports/metrics/tracking_conf_ablation.json
 python -m eval.draw_check                      # -> docs/eval_check/
 python eval/make_results_md.py                 # prints the tables above
 ```

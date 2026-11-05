@@ -1,0 +1,315 @@
+{
+  "detector": "yolo11s.onnx",
+  "imgsz": 640,
+  "nms_iou": 0.5,
+  "detector_conf_floor": 0.1,
+  "note": "detector runs once per frame at conf 0.10; config a feeds the tracker only boxes with conf>=0.35 (identical to running the detector at 0.35, since NMS is applied independently of the score floor order)",
+  "configs": {
+    "a_conf0.35_default": {
+      "detector_conf_to_tracker": 0.35,
+      "tracker_yaml": "bytetrack.yaml",
+      "scores": {
+        "MOT17-02": {
+          "mota": 0.22851299714762396,
+          "idf1": 0.3231240428790199,
+          "num_switches": 37,
+          "num_false_positives": 322,
+          "num_misses": 13976,
+          "mostly_tracked": 8,
+          "mostly_lost": 39,
+          "partially_tracked": 15,
+          "num_fragmentations": 177,
+          "recall": 0.24783380872934718,
+          "precision": 0.934645829104932,
+          "num_objects": 18581,
+          "num_matches": 4568,
+          "gt_identities": 62,
+          "pred_identities": 84,
+          "pred_identities_before_ignore_filter": 91,
+          "pred_boxes_dropped_in_ignore_regions": 373
+        },
+        "MOT17-04": {
+          "mota": 0.29047248564880035,
+          "idf1": 0.4222348234256372,
+          "num_switches": 49,
+          "num_false_positives": 1033,
+          "num_misses": 32661,
+          "mostly_tracked": 8,
+          "mostly_lost": 45,
+          "partially_tracked": 30,
+          "num_fragmentations": 473,
+          "recall": 0.3132241310427487,
+          "precision": 0.9351497269131772,
+          "num_objects": 47557,
+          "num_matches": 14847,
+          "gt_identities": 83,
+          "pred_identities": 99,
+          "pred_identities_before_ignore_filter": 104,
+          "pred_boxes_dropped_in_ignore_regions": 458
+        },
+        "MOT17-09": {
+          "mota": 0.6159624413145539,
+          "idf1": 0.5665115272215607,
+          "num_switches": 44,
+          "num_false_positives": 295,
+          "num_misses": 1706,
+          "mostly_tracked": 9,
+          "mostly_lost": 4,
+          "partially_tracked": 13,
+          "num_fragmentations": 96,
+          "recall": 0.6796244131455399,
+          "precision": 0.924629535002555,
+          "num_objects": 5325,
+          "num_matches": 3575,
+          "gt_identities": 26,
+          "pred_identities": 54,
+          "pred_identities_before_ignore_filter": 64,
+          "pred_boxes_dropped_in_ignore_regions": 410
+        },
+        "OVERALL": {
+          "mota": 0.2986160670556791,
+          "idf1": 0.41187534421664085,
+          "num_switches": 130,
+          "num_false_positives": 1650,
+          "num_misses": 48343,
+          "mostly_tracked": 25,
+          "mostly_lost": 88,
+          "partially_tracked": 58,
+          "num_fragmentations": 746,
+          "recall": 0.32352406140240403,
+          "precision": 0.9333871618893823,
+          "num_objects": 71463,
+          "num_matches": 22990,
+          "gt_identities": 171,
+          "pred_identities": 237
+        }
+      },
+      "recall_by_visibility_from_tracker_output": {
+        "<0.3": {
+          "count": 22627,
+          "hit": 770,
+          "recall": 0.03403014098201264
+        },
+        "0.3-0.7": {
+          "count": 18826,
+          "hit": 3083,
+          "recall": 0.16376288112185275
+        },
+        ">0.7": {
+          "count": 30010,
+          "hit": 19268,
+          "recall": 0.642052649116961
+        }
+      },
+      "tracker_ms_per_frame_mean_by_seq": {
+        "MOT17-02": 0.6253374294222643,
+        "MOT17-04": 0.8620244736916253,
+        "MOT17-09": 0.6235479947090858
+      }
+    },
+    "b_conf0.10_default": {
+      "detector_conf_to_tracker": 0.1,
+      "tracker_yaml": "bytetrack.yaml",
+      "scores": {
+        "MOT17-02": {
+          "mota": 0.25041709272913193,
+          "idf1": 0.3192090395480226,
+          "num_switches": 50,
+          "num_false_positives": 748,
+          "num_misses": 13130,
+          "mostly_tracked": 8,
+          "mostly_lost": 38,
+          "partially_tracked": 16,
+          "num_fragmentations": 130,
+          "recall": 0.29336418922555296,
+          "precision": 0.879335376673657,
+          "num_objects": 18581,
+          "num_matches": 5401,
+          "gt_identities": 62,
+          "pred_identities": 98,
+          "pred_identities_before_ignore_filter": 109,
+          "pred_boxes_dropped_in_ignore_regions": 520
+        },
+        "MOT17-04": {
+          "mota": 0.37025043631852306,
+          "idf1": 0.48178478155017485,
+          "num_switches": 60,
+          "num_false_positives": 1274,
+          "num_misses": 28615,
+          "mostly_tracked": 11,
+          "mostly_lost": 38,
+          "partially_tracked": 34,
+          "num_fragmentations": 157,
+          "recall": 0.39830098618499904,
+          "precision": 0.9369806094182825,
+          "num_objects": 47557,
+          "num_matches": 18882,
+          "gt_identities": 83,
+          "pred_identities": 117,
+          "pred_identities_before_ignore_filter": 119,
+          "pred_boxes_dropped_in_ignore_regions": 916
+        },
+        "MOT17-09": {
+          "mota": 0.6065727699530516,
+          "idf1": 0.5466427743227574,
+          "num_switches": 46,
+          "num_false_positives": 443,
+          "num_misses": 1606,
+          "mostly_tracked": 10,
+          "mostly_lost": 4,
+          "partially_tracked": 12,
+          "num_fragmentations": 79,
+          "recall": 0.6984037558685446,
+          "precision": 0.8935607880826526,
+          "num_objects": 5325,
+          "num_matches": 3673,
+          "gt_identities": 26,
+          "pred_identities": 73,
+          "pred_identities_before_ignore_filter": 84,
+          "pred_boxes_dropped_in_ignore_regions": 608
+        },
+        "OVERALL": {
+          "mota": 0.35670206960245165,
+          "idf1": 0.4483339866718934,
+          "num_switches": 156,
+          "num_false_positives": 2465,
+          "num_misses": 43351,
+          "mostly_tracked": 29,
+          "mostly_lost": 80,
+          "partially_tracked": 62,
+          "num_fragmentations": 366,
+          "recall": 0.39337839161524146,
+          "precision": 0.9193838506066652,
+          "num_objects": 71463,
+          "num_matches": 27956,
+          "gt_identities": 171,
+          "pred_identities": 288
+        }
+      },
+      "recall_by_visibility_from_tracker_output": {
+        "<0.3": {
+          "count": 22627,
+          "hit": 1166,
+          "recall": 0.051531356344190565
+        },
+        "0.3-0.7": {
+          "count": 18826,
+          "hit": 4023,
+          "recall": 0.21369382768511633
+        },
+        ">0.7": {
+          "count": 30010,
+          "hit": 22925,
+          "recall": 0.7639120293235588
+        }
+      },
+      "tracker_ms_per_frame_mean_by_seq": {
+        "MOT17-02": 0.6857870195138579,
+        "MOT17-04": 0.9882905804330394,
+        "MOT17-09": 0.5861296673260984
+      }
+    },
+    "c_conf0.10_buffer60": {
+      "detector_conf_to_tracker": 0.1,
+      "tracker_yaml": "configs/bytetrack_buffer60.yaml",
+      "scores": {
+        "MOT17-02": {
+          "mota": 0.2512781873957268,
+          "idf1": 0.32279399903210193,
+          "num_switches": 50,
+          "num_false_positives": 748,
+          "num_misses": 13114,
+          "mostly_tracked": 8,
+          "mostly_lost": 38,
+          "partially_tracked": 16,
+          "num_fragmentations": 137,
+          "recall": 0.2942252838921479,
+          "precision": 0.879646017699115,
+          "num_objects": 18581,
+          "num_matches": 5417,
+          "gt_identities": 62,
+          "pred_identities": 97,
+          "pred_identities_before_ignore_filter": 107,
+          "pred_boxes_dropped_in_ignore_regions": 528
+        },
+        "MOT17-04": {
+          "mota": 0.3703555733120256,
+          "idf1": 0.48351972616483224,
+          "num_switches": 60,
+          "num_false_positives": 1274,
+          "num_misses": 28610,
+          "mostly_tracked": 11,
+          "mostly_lost": 38,
+          "partially_tracked": 34,
+          "num_fragmentations": 157,
+          "recall": 0.3984061231785016,
+          "precision": 0.9369961920775431,
+          "num_objects": 47557,
+          "num_matches": 18887,
+          "gt_identities": 83,
+          "pred_identities": 116,
+          "pred_identities_before_ignore_filter": 118,
+          "pred_boxes_dropped_in_ignore_regions": 916
+        },
+        "MOT17-09": {
+          "mota": 0.6076995305164319,
+          "idf1": 0.5473129610115911,
+          "num_switches": 47,
+          "num_false_positives": 441,
+          "num_misses": 1601,
+          "mostly_tracked": 10,
+          "mostly_lost": 4,
+          "partially_tracked": 12,
+          "num_fragmentations": 79,
+          "recall": 0.6993427230046948,
+          "precision": 0.8941176470588236,
+          "num_objects": 5325,
+          "num_matches": 3677,
+          "gt_identities": 26,
+          "pred_identities": 69,
+          "pred_identities_before_ignore_filter": 77,
+          "pred_boxes_dropped_in_ignore_regions": 611
+        },
+        "OVERALL": {
+          "mota": 0.3570798874942278,
+          "idf1": 0.4504036682865653,
+          "num_switches": 157,
+          "num_false_positives": 2463,
+          "num_misses": 43325,
+          "mostly_tracked": 29,
+          "mostly_lost": 80,
+          "partially_tracked": 62,
+          "num_fragmentations": 373,
+          "recall": 0.39374221625176664,
+          "precision": 0.9195124342341754,
+          "num_objects": 71463,
+          "num_matches": 27981,
+          "gt_identities": 171,
+          "pred_identities": 282
+        }
+      },
+      "recall_by_visibility_from_tracker_output": {
+        "<0.3": {
+          "count": 22627,
+          "hit": 1175,
+          "recall": 0.05192911123878552
+        },
+        "0.3-0.7": {
+          "count": 18826,
+          "hit": 4033,
+          "recall": 0.21422500796770425
+        },
+        ">0.7": {
+          "count": 30010,
+          "hit": 22932,
+          "recall": 0.7641452849050316
+        }
+      },
+      "tracker_ms_per_frame_mean_by_seq": {
+        "MOT17-02": 0.6763740931637585,
+        "MOT17-04": 0.9694850280703533,
+        "MOT17-09": 0.584984113506618
+      }
+    }
+  }
+}

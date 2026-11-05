@@ -13,6 +13,7 @@ runtime:
   max_frames: 0
 tracking:
   tracker: bytetrack.yaml
+  detector_conf: 0.1  # tracker sees boxes >= this (feeds ByteTrack's 2nd pass); drawing/events use runtime.score_threshold
   stopped_vehicle_motion_threshold_px: 6.0
   stopped_vehicle_dwell_seconds: 15
 rules:

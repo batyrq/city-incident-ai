@@ -86,13 +86,13 @@ def drop_ignore_matches(pred: dict, gt_valid: dict | None, gt_ign: dict | None):
     return px[~drop], pid[~drop], int(drop.sum())
 
 
-def score(tracker: str) -> dict:
+def score(tracker: str, out_dir: Path = OUT_DIR) -> dict:
     import motmetrics as mm
     accs, names, extra = [], [], {}
     for seq in SEQS:
         gt = load_gt(seq)
         gv, gi = per_frame(gt["valid"]), per_frame(gt["ignore"])
-        pr = load_mot_results(OUT_DIR / tracker / f"{seq}.txt")
+        pr = load_mot_results(out_dir / tracker / f"{seq}.txt")
         acc = mm.MOTAccumulator(auto_id=False)
         pred_ids, pred_ids_raw, dropped = set(), set(), 0
         for fr in range(1, seq_info(seq)["length"] + 1):
@@ -126,14 +126,86 @@ def score(tracker: str) -> dict:
     return out
 
 
+ABLATION = {  # name -> (min detector conf given to the tracker, tracker yaml)
+    "a_conf0.35_default": (0.35, "bytetrack.yaml"),
+    "b_conf0.10_default": (0.10, "bytetrack.yaml"),
+    "c_conf0.10_buffer60": (0.10, "configs/bytetrack_buffer60.yaml"),
+}
+ABL_DIR = Path("reports/metrics/mot_results_conf_ablation")
+
+
+def vis_recall_from_tracks(tracker: str, out_dir: Path) -> dict:
+    """Recall by GT visibility computed from TRACKER OUTPUT: a GT box is hit if the Hungarian match
+    between that frame's valid GT and (ignore-filtered) tracker boxes has IoU>=0.5."""
+    from scipy.optimize import linear_sum_assignment
+    vis_all, hit_all = [], []
+    for seq in SEQS:
+        gt = load_gt(seq); gv, gi = per_frame(gt["valid"]), per_frame(gt["ignore"])
+        pr = load_mot_results(out_dir / tracker / f"{seq}.txt")
+        for fr, g in gv.items():
+            hit = np.zeros(len(g["id"]), bool)
+            p = pr.get(fr)
+            if p:
+                px, _, _ = drop_ignore_matches(p, g, gi.get(fr))
+                if len(px):
+                    iou = iou_matrix(g["xyxy"], px); r, c = linear_sum_assignment(-iou)
+                    for i, j in zip(r, c):
+                        hit[i] = iou[i, j] >= 0.5
+            vis_all.extend(g["vis"].tolist()); hit_all.extend(hit.tolist())
+    vis, hit = np.asarray(vis_all), np.asarray(hit_all)
+    def b(m):
+        n = int(m.sum()); return {"count": n, "hit": int(hit[m].sum()), "recall": float(hit[m].mean()) if n else None}
+    return {"<0.3": b(vis < 0.3), "0.3-0.7": b((vis >= 0.3) & (vis <= 0.7)), ">0.7": b(vis > 0.7)}
+
+
+def run_ablation(args) -> None:
+    import cv2
+    out = {"detector": "yolo11s.onnx", "imgsz": args.imgsz, "nms_iou": args.nms_iou, "detector_conf_floor": 0.10,
+           "note": "detector runs once per frame at conf 0.10; config a feeds the tracker only boxes with conf>=0.35 (identical to running the detector at 0.35, since NMS is applied independently of the score floor order)",
+           "configs": {}}
+    model = load_detector()
+    timing = {n: {} for n in ABLATION}
+    for seq in SEQS:
+        info = seq_info(seq)
+        trk = {n: make_tracker(y, info["frame_rate"])[0] for n, (_, y) in ABLATION.items()}
+        rows = {n: [] for n in ABLATION}; times = {n: [] for n in ABLATION}
+        for fr in range(1, info["length"] + 1):
+            img = cv2.imread(str(image_path(seq, fr)))
+            res = model.predict(source=img, conf=0.10, iou=args.nms_iou, imgsz=args.imgsz, classes=[0], verbose=False)[0]
+            for n, (cmin, _) in ABLATION.items():
+                b = res.boxes.cpu().numpy()
+                det = b[b.conf >= cmin] if len(b) else b
+                t0 = time.perf_counter(); tracks = trk[n].update(det, img); times[n].append((time.perf_counter() - t0) * 1000)
+                for x1, y1, x2, y2, tid, sc, *_ in tracks:
+                    rows[n].append((fr, int(tid), x1, y1, x2 - x1, y2 - y1, sc))
+        for n in ABLATION:
+            d = ABL_DIR / n; d.mkdir(parents=True, exist_ok=True)
+            with open(d / f"{seq}.txt", "w") as f:
+                for fr, tid, x, y, w, h, sc in rows[n]:
+                    f.write(f"{fr},{tid},{x:.2f},{y:.2f},{w:.2f},{h:.2f},{sc:.4f},-1,-1,-1\n")
+            timing[n][seq] = float(np.mean(times[n]))
+        print(seq, "done", flush=True)
+    for n, (cmin, y) in ABLATION.items():
+        sc = score(n, ABL_DIR)
+        out["configs"][n] = {"detector_conf_to_tracker": cmin, "tracker_yaml": y, "scores": sc,
+                             "recall_by_visibility_from_tracker_output": vis_recall_from_tracks(n, ABL_DIR),
+                             "tracker_ms_per_frame_mean_by_seq": timing[n]}
+        o = sc["OVERALL"]; print(n, {k: (round(v, 4) if isinstance(v, float) else v) for k, v in o.items()})
+    Path(args.out).write_text(json.dumps(out, indent=2)); print("wrote", args.out)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--conf", type=float, default=0.35)
     ap.add_argument("--imgsz", type=int, default=640)
     ap.add_argument("--nms-iou", type=float, default=0.5)
     ap.add_argument("--eval-only", action="store_true")
+    ap.add_argument("--conf-ablation", action="store_true", help="ByteTrack detector-conf ablation (a/b/c); writes reports/metrics/tracking_conf_ablation.json")
     ap.add_argument("--out", default="reports/metrics/tracking.json")
     args = ap.parse_args()
+    if args.conf_ablation:
+        args.out = "reports/metrics/tracking_conf_ablation.json" if args.out == "reports/metrics/tracking.json" else args.out
+        return run_ablation(args)
     timing_path = Path("reports/metrics/tracking_timing.json")
     if args.eval_only:
         timing = json.loads(timing_path.read_text())

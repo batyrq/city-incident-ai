@@ -1,0 +1,41 @@
+{
+  "note": "unique track IDs among drawn detections (>=0.35). before = detector conf 0.35 into tracker; after = detector conf 0.10 into tracker, display/events >=0.35. No GT on these clips: counts are not accuracy.",
+  "clip_61": {
+    "before": {
+      "unique_tracks": 30,
+      "max_id": 682,
+      "by_dominant_class": {
+        "car": 21,
+        "person": 9
+      }
+    },
+    "after": {
+      "unique_tracks": 34,
+      "max_id": 731,
+      "by_dominant_class": {
+        "car": 24,
+        "person": 10
+      }
+    }
+  },
+  "clip_4332": {
+    "before": {
+      "unique_tracks": 172,
+      "max_id": 309,
+      "by_dominant_class": {
+        "person": 105,
+        "car": 66,
+        "truck": 1
+      }
+    },
+    "after": {
+      "unique_tracks": 193,
+      "max_id": 757,
+      "by_dominant_class": {
+        "person": 112,
+        "car": 80,
+        "truck": 1
+      }
+    }
+  }
+}
