@@ -526,6 +526,22 @@ def _load_incident_detector(spec: DemoSpec, config: dict[str, Any]) -> tuple[Any
         return None, str(exc)
 
 
+def _resolve_class_ids(detector: Any, config: dict[str, Any]) -> list[int] | None:
+    """Map config['classes'] (names) to detector class ids; None means no filtering.
+
+    Filtering is skipped when the list is empty/absent or any name is unknown to the
+    detector (e.g. open-vocabulary models whose vocabulary is the prompt list).
+    """
+    wanted = [str(name).strip().lower() for name in (config.get("classes") or []) if str(name).strip()]
+    if not wanted or wanted == ["all"]:
+        return None
+    names = getattr(detector, "names", None) or {}
+    by_name = {str(name).lower(): int(idx) for idx, name in names.items()}
+    if any(name not in by_name for name in wanted):
+        return None
+    return sorted(by_name[name] for name in wanted)
+
+
 def _infer_frame(detector: Any, frame: Any, spec: DemoSpec, config: dict[str, Any], track: bool = True) -> Any:
     runtime_cfg = config.get("runtime", {})
     tracking_cfg = config.get("tracking", {})
@@ -533,20 +549,16 @@ def _infer_frame(detector: Any, frame: Any, spec: DemoSpec, config: dict[str, An
     iou = runtime_cfg.get("iou_threshold", 0.5)
     imgsz = runtime_cfg.get("imgsz", 640)
     tracker_cfg = spec.tracker_config or tracking_cfg.get("tracker", "bytetrack.yaml")
+    class_ids = _resolve_class_ids(detector, config)
+    common: dict[str, Any] = {"verbose": False, "conf": conf, "iou": iou, "imgsz": imgsz}
+    if class_ids is not None:
+        common["classes"] = class_ids
     if not track:
-        return detector.predict(source=frame, verbose=False, conf=conf, iou=iou, imgsz=imgsz)[0]
+        return detector.predict(source=frame, **common)[0]
     try:
-        return detector.track(
-            source=frame,
-            persist=True,
-            verbose=False,
-            conf=conf,
-            iou=iou,
-            imgsz=imgsz,
-            tracker=tracker_cfg,
-        )[0]
+        return detector.track(source=frame, persist=True, tracker=tracker_cfg, **common)[0]
     except Exception:
-        return detector.predict(source=frame, verbose=False, conf=conf, iou=iou, imgsz=imgsz)[0]
+        return detector.predict(source=frame, **common)[0]
 
 
 def _extract_detections(result: Any, frame_idx: int, fps: float) -> list[dict[str, Any]]:
