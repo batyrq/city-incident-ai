@@ -7,11 +7,8 @@ demo-pose:
 test:
 	pytest -q
 
-.PHONY: site serve app
+.PHONY: site run
 site:
 	python scripts/build_site.py
-serve: site
-	@echo "open http://localhost:8000"
-	cd site && python -m http.server 8000
-app:
-	python app.py
+run: site
+	python server.py

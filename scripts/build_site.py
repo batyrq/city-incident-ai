@@ -214,6 +214,10 @@ table{width:100%;border-collapse:collapse;font-size:14px;margin-top:14px}th,td{p
 th:first-child,td:first-child{text-align:left;white-space:normal}th{color:var(--muted);font-weight:500;font-size:12.5px}tr.hl td{background:rgba(94,234,212,.07)}tr.hl td:first-child{color:var(--accent);font-weight:600}
 .scroll{overflow-x:auto}.note{background:var(--panel);border-left:3px solid var(--accent);padding:14px 18px;border-radius:8px;margin:18px 0;color:#cfd6de}
 svg text{font-family:inherit}
+.live{padding:0;overflow:hidden;background:#0b0d10}.live>p{padding:18px}.live iframe{width:100%;height:760px;border:0;display:block;background:#0b0d10}
+.live .off{padding:26px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:center}@media(max-width:760px){.live .off{grid-template-columns:1fr}}
+.live .off h3{margin-bottom:6px}pre.cmd{background:#0b0d10;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);overflow-x:auto}
+.live .off img{width:100%;border-radius:10px;border:1px solid var(--line)}
 .cases{display:grid;gap:18px}.case{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
 .case-head{display:flex;gap:12px;align-items:center}.tag{background:var(--accent);color:#04201c;font-weight:700;border-radius:8px;padding:2px 10px;font-size:13px}
 .hero-num{font-size:30px;font-weight:700;margin:12px 0;letter-spacing:-.02em}.hero-num span{display:block;font-size:14px;font-weight:400;color:var(--muted);letter-spacing:0}
@@ -227,7 +231,7 @@ svg text{font-family:inherit}
 footer{padding:60px 0 80px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);margin-top:72px}
 @media(max-width:560px){.wrap{padding:0 16px}.grid2,.two{grid-template-columns:1fr}.chart{height:280px}.stat .big{font-size:28px}}
 </style></head><body>
-<nav><div class="wrap"><b>city-incident-ai</b><a href="#pipeline">Pipeline</a><a href="#numbers">Numbers</a><a href="#detection">Detection</a><a href="#tracking">Tracking</a><a href="#speed">Speed</a><a href="#errors">Errors</a><a href="#debug">Debugging</a><a href="#gait">Gait</a><a href="#limits">Limits</a></div></nav>
+<nav><div class="wrap"><b>city-incident-ai</b><a href="#live">Try it live</a><a href="#pipeline">Pipeline</a><a href="#numbers">Numbers</a><a href="#detection">Detection</a><a href="#tracking">Tracking</a><a href="#speed">Speed</a><a href="#errors">Errors</a><a href="#debug">Debugging</a><a href="#gait">Gait</a><a href="#limits">Limits</a></div></nav>
 
 <header class="hero"><div class="wrap">
   <div><h1>Video analytics for<br><span style="color:var(--accent)">city cameras</span></h1>
@@ -236,6 +240,10 @@ footer{padding:60px 0 80px;color:var(--muted);font-size:13.5px;border-top:1px so
   <video id="hero" src="videos/demo_clip61.mp4" autoplay muted loop playsinline controls></video>
   <p class="muted" style="font-size:13px">Boxes with class and track ID, 1 s motion trails, FPS/latency counter. Second clip: yolo11n-pose skeletons; the red banner is the <code>crowding</code> event firing.</p></div>
 </div></header>
+
+<section id="live"><div class="wrap"><h2><small>Try it live</small>Run the pipeline on a clip</h2>
+<p class="lead">Pick a bundled clip or upload your own, choose pose on/off, device and frame limit, and the real pipeline returns the annotated video and its events.</p>
+<div id="live-box" class="box live"><p class="muted" style="margin:0">Checking for the local demo server…</p></div></div></section>
 
 <section id="pipeline"><div class="wrap"><h2><small>How it works</small>Pipeline</h2>
 <p class="lead">One pass per frame. The tracker is fed low-confidence boxes; drawing and events only use confident ones.</p>
@@ -308,6 +316,20 @@ const D = __DATA__;
 const ACC='#5eead4', G1='#8a96a3', G2='#4b5663', TXT='#98a3b0', GRID='#222a33';
 // hero toggle
 document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tog button').forEach(x=>x.classList.remove('on'));b.classList.add('on');const v=document.getElementById('hero');v.src=b.dataset.src;v.play().catch(()=>{});});
+// live demo: iframe when the local server answers /demo, otherwise a card (static hosting, file://, server down)
+(async function(){
+ const box=document.getElementById('live-box');
+ const off=()=>{box.innerHTML='<div class="off"><div><h3>The live demo runs locally</h3><p class="muted">This page is a static copy, so there is no server behind it. Clone the repo and run one command; the demo opens in this section at <code>http://localhost:8000</code>.</p><pre class="cmd">make run</pre><p class="muted" style="font-size:13px">Upload a clip or pick a bundled one, optionally with pose skeletons (shown right).</p></div><img src="img/demo_pose.gif" alt="pose overlay example" loading="lazy"></div>';};
+ try{
+  const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),2500);
+  const r=await fetch('demo/',{signal:ctl.signal,cache:'no-store'}); clearTimeout(t);
+  const txt=await r.text();
+  if(!r.ok||!/gradio/i.test(txt)) throw new Error('no demo');
+  const f=document.createElement('iframe'); f.src='demo/?__theme=dark'; f.title='Live demo'; box.replaceChildren(f);
+  const fit=()=>{try{const d=f.contentDocument,c=d&&d.querySelector('.gradio-container');if(c){const h=Math.ceil(c.getBoundingClientRect().height);if(h>200&&Math.abs(h-f.offsetHeight)>6)f.style.height=h+'px';}}catch(e){}};
+  f.addEventListener('load',()=>{fit();setInterval(fit,400);});
+ }catch(e){off();}
+})();
 // compare slider
 (function(){const c=document.getElementById('cmp');if(!c)return;const top=c.querySelector('.cmp-top'),line=c.querySelector('.cmp-line');c.querySelector('input').oninput=e=>{const v=e.target.value;top.style.clipPath='inset(0 '+(100-v)+'% 0 0)';line.style.left=v+'%';};})();
 function initCharts(){

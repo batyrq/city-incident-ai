@@ -150,26 +150,23 @@ python -m eval.int8_debug                      # -> reports/metrics/int8_debug.j
 ```bash
 # 1. setup (Python 3.11/3.12)
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt ultralytics onnx onnxruntime lap motmetrics matplotlib scipy
+pip install -r requirements.txt ultralytics onnx onnxruntime lap motmetrics matplotlib scipy gradio
 python -c "from ultralytics import YOLO; YOLO('yolo11s.pt'); YOLO('yolo11n-pose.pt')"   # weights for the MPS path and --pose
 
-# 2. demo -> outputs/<clip>_demo.mp4 (H.264) + reports/demo_<clip>_summary.json + alerts/demo_<clip>/...
-make demo SRC=path/to/video.mp4        # same as: python demo.py --source path/to/video.mp4  [--pose] [--max-frames N]
+# 2. run everything: results website + live demo at http://localhost:8000
+make run
 
 # 3. evaluation (needs MOT17 train sequences 02/04/09 in data/mot/, see Reproduce below)
 python -m eval.eval_detection && python -m eval.eval_tracking && python -m eval.benchmark_speed
 ```
 
-`demo.py` uses `yolo11s.pt` on Apple MPS when both are available and otherwise the repo's `yolo11s.onnx` on CPU (`--device cpu` forces it). The demo clips used here are free Mixkit videos kept locally in `data/videos/` (not committed). The classic entry point still works: `python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source video.mp4 [--max-frames N]`.
+`make run` rebuilds `site/` from `reports/metrics/*.json` and starts `server.py`: the results site at `/` and the Gradio live demo (embedded in the "Try it live" section, also at `/demo`). Upload a clip or pick a bundled one, with pose on/off, device and a frame limit. The page works offline; when the static `site/` is hosted without the server (e.g. GitHub Pages) the live section shows a "runs locally" card instead.
 
-## Website and live app
+Command-line alternatives: `make demo SRC=path/to/video.mp4` (same as `python demo.py --source ... [--pose] [--max-frames N]`) writes an H.264 `outputs/<clip>_demo.mp4`; `make site` only rebuilds the static page. `demo.py` uses `yolo11s.pt` on Apple MPS when both are available and otherwise the repo's `yolo11s.onnx` on CPU (`--device cpu` forces it). The demo clips are free Mixkit videos kept locally in `data/videos/` (not committed). The classic entry point still works: `python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source video.mp4 [--max-frames N]`.
 
-```bash
-make serve      # builds site/ from reports/metrics/*.json and serves http://localhost:8000 (works offline)
-make app        # Gradio live demo at http://127.0.0.1:7860: upload a clip, pose on/off, device, max frames
-```
+## Website
 
-`make site` only rebuilds `site/index.html` (`scripts/build_site.py`); every number on the page is read from `reports/metrics/*.json`. The compressed demo videos in `site/videos/` and the local Chart.js copy in `site/vendor/` are committed. The site can be published with GitHub Pages: see `.github/workflows/pages.yml` (manual trigger; Pages is not enabled by default).
+`scripts/build_site.py` generates `site/index.html`; every number on the page is read from `reports/metrics/*.json`. The compressed demo videos in `site/videos/` and the local Chart.js copy in `site/vendor/` are committed, so the static site can be published with GitHub Pages (`.github/workflows/pages.yml`, manual trigger; Pages is not enabled by default).
 
 ## Pipeline
 
