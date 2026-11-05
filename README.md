@@ -162,6 +162,15 @@ python -m eval.eval_detection && python -m eval.eval_tracking && python -m eval.
 
 `demo.py` uses `yolo11s.pt` on Apple MPS when both are available and otherwise the repo's `yolo11s.onnx` on CPU (`--device cpu` forces it). The demo clips used here are free Mixkit videos kept locally in `data/videos/` (not committed). The classic entry point still works: `python infer_video.py --config configs/infer_pretrained_yolo11s.yaml --source video.mp4 [--max-frames N]`.
 
+## Website and live app
+
+```bash
+make serve      # builds site/ from reports/metrics/*.json and serves http://localhost:8000 (works offline)
+make app        # Gradio live demo at http://127.0.0.1:7860: upload a clip, pose on/off, device, max frames
+```
+
+`make site` only rebuilds `site/index.html` (`scripts/build_site.py`); every number on the page is read from `reports/metrics/*.json`. The compressed demo videos in `site/videos/` and the local Chart.js copy in `site/vendor/` are committed. The site can be published with GitHub Pages: see `.github/workflows/pages.yml` (manual trigger; Pages is not enabled by default).
+
 ## Pipeline
 
 ```mermaid

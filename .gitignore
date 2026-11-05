@@ -42,3 +42,6 @@ data/
 
 # Demo videos
 outputs/
+
+# Compressed site videos are committed (small); other videos stay ignored
+!site/videos/*.mp4

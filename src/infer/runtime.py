@@ -257,6 +257,10 @@ def _run_video_like_stream(
     detections_total = 0
     max_frames = int(config.get("runtime", {}).get("max_frames", 0) or 0)
     _reset_tracker_fallback()
+    progress_cb = config.get("progress_callback")  # optional callable(frame_idx, total_frames); set by app.py
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+    if max_frames:
+        total_frames = min(total_frames, max_frames) if total_frames else max_frames
     viz_cfg = config.get("viz") or {}
     overlay = None
     if viz_cfg.get("enabled"):
@@ -290,6 +294,8 @@ def _run_video_like_stream(
             if max_frames and frame_idx >= max_frames:
                 break
             frame_idx += 1
+            if progress_cb is not None and (frame_idx % 5 == 0 or frame_idx == total_frames):
+                progress_cb(frame_idx, total_frames)
             prebuffer.append(frame.copy())
             started = timeit.default_timer()
             result = _infer_frame(detector, frame, spec, config, track=True)

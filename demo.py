@@ -34,6 +34,41 @@ def pick_backend(device: str | None, weights: str | None) -> tuple[str, str]:
     return device or "cpu", weights or "yolo11s.onnx"
 
 
+def run_demo(source: str, out: str | None = None, device: str | None = None, weights: str | None = None, pose: bool = False,
+             max_frames: int | None = None, classes: str | None = None, config_path: str = "configs/infer_pretrained_yolo11s.yaml",
+             progress_callback=None, run_suffix: str = "") -> tuple[dict, Path]:
+    """Run the normal pipeline with the overlay on and re-encode the result to H.264. Returns (summary, output path)."""
+    device, weights = pick_backend(device, weights)
+    cfg = load_yaml(config_path)
+    stem = Path(source).stem + ("_pose" if pose else "") + run_suffix
+    cfg["run_name"] = f"demo_{stem}"
+    cfg["report_path"] = f"reports/demo_{stem}_summary.json"
+    cfg["model_weights"] = weights
+    cfg.setdefault("runtime", {})["device"] = device
+    if max_frames is not None:
+        cfg["runtime"]["max_frames"] = max_frames
+    if classes:
+        cfg["classes"] = [c.strip() for c in classes.split(",") if c.strip()]
+    cfg["viz"] = {"enabled": True, "pose": pose, "trail_seconds": 1.0, "banner_seconds": 2.0}
+    if progress_callback is not None:
+        cfg["progress_callback"] = progress_callback
+    print(f"device={device} weights={weights} pose={pose}")
+    result = run_demo_video(source, cfg, model_path=weights)
+    result["device"], result["weights"], result["report_path"] = device, weights, cfg["report_path"]
+    write_json({k: v for k, v in result.items()}, Path(cfg["report_path"]))
+    if result.get("status") != "completed":
+        raise RuntimeError(f"pipeline did not complete: {result.get('skipped_reason') or result.get('status')}")
+    out_path = Path(out or f"outputs/{Path(source).stem}{'_pose' if pose else ''}{run_suffix}_demo.mp4")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    if shutil.which("ffmpeg"):
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", result["output_video_path"], "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                        "-crf", "20", "-preset", "fast", "-movflags", "+faststart", str(out_path)], check=True)
+    else:
+        shutil.copy(result["output_video_path"], out_path)
+        print("ffmpeg not found: output is mp4v, not H.264")
+    return result, out_path
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--source", required=True)
@@ -45,36 +80,12 @@ def main() -> None:
     ap.add_argument("--max-frames", type=int, default=None)
     ap.add_argument("--classes", default=None, help="comma-separated class names, or 'all'")
     args = ap.parse_args()
-
-    device, weights = pick_backend(args.device, args.weights)
-    cfg = load_yaml(args.config)
-    stem = Path(args.source).stem + ("_pose" if args.pose else "")
-    cfg["run_name"] = f"demo_{stem}"
-    cfg["report_path"] = f"reports/demo_{stem}_summary.json"
-    cfg["model_weights"] = weights
-    cfg.setdefault("runtime", {})["device"] = device
-    if args.max_frames is not None:
-        cfg["runtime"]["max_frames"] = args.max_frames
-    if args.classes:
-        cfg["classes"] = [c.strip() for c in args.classes.split(",") if c.strip()]
-    cfg["viz"] = {"enabled": True, "pose": args.pose, "trail_seconds": 1.0, "banner_seconds": 2.0}
-    print(f"device={device} weights={weights} pose={args.pose}")
-
-    result = run_demo_video(args.source, cfg, model_path=weights)
-    write_json(result, Path(cfg["report_path"]))
-    if result.get("status") != "completed":
-        sys.exit(f"pipeline did not complete: {result.get('skipped_reason') or result.get('status')}")
-    raw = result["output_video_path"]
-    out = Path(args.out or f"outputs/{Path(args.source).stem}{'_pose' if args.pose else ''}_demo.mp4")
-    out.parent.mkdir(parents=True, exist_ok=True)
-    if shutil.which("ffmpeg"):
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                        "-crf", "20", "-preset", "fast", "-movflags", "+faststart", str(out)], check=True)
-    else:
-        shutil.copy(raw, out)
-        print("ffmpeg not found: output is mp4v, not H.264")
+    try:
+        result, out = run_demo(args.source, args.out, args.device, args.weights, args.pose, args.max_frames, args.classes, args.config)
+    except RuntimeError as exc:
+        sys.exit(str(exc))
     print(f"frames={result['frames_processed']} events={result['events_detected']} pipeline_fps={result.get('pipeline_fps')}")
-    print(f"video   : {out}\nsummary : {cfg['report_path']}\ntracker_fallback: {result['tracker_fallback']}")
+    print(f"video   : {out}\nsummary : {result['report_path']}\ntracker_fallback: {result['tracker_fallback']}")
 
 
 if __name__ == "__main__":
