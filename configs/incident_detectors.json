@@ -1,0 +1,96 @@
+{
+  "yolo_weights": "models/incident_dfire_yolo11n.pt",
+  "clip_prompts": {
+    "fire": [
+      [
+        "a photo of a fire",
+        "a photo of flames burning",
+        "a photo of a burning building"
+      ],
+      [
+        "a photo of a normal street",
+        "a photo of a city at sunset",
+        "a photo of an ordinary outdoor scene",
+        "a photo of car headlights at night"
+      ]
+    ],
+    "smoke": [
+      [
+        "a photo of smoke",
+        "a photo of smoke rising from a fire",
+        "a photo of a smoky sky"
+      ],
+      [
+        "a photo of a clear sky",
+        "a photo of clouds",
+        "a photo of a normal street",
+        "a photo of fog or steam"
+      ]
+    ],
+    "flood": [
+      [
+        "a photo of a flooded street",
+        "a photo of flood water covering a road",
+        "a photo of a flood"
+      ],
+      [
+        "a photo of a normal dry street",
+        "a photo of a river",
+        "a photo of a swimming pool",
+        "a photo of a wet road after rain"
+      ]
+    ],
+    "crash": [
+      [
+        "a photo of a car crash",
+        "a photo of a traffic accident with damaged vehicles",
+        "a photo of two cars that collided"
+      ],
+      [
+        "a photo of normal street traffic",
+        "a photo of a busy road with cars",
+        "a photo of a city street",
+        "a photo of a parking lot"
+      ]
+    ]
+  },
+  "classes": {
+    "fire": {
+      "approach": "clip_zeroshot",
+      "letter": "B",
+      "trained_by_me": false,
+      "threshold": 0.7415,
+      "val_f1": 0.9543,
+      "test_f1": 0.9669,
+      "rule": "best val F1, but a no-training approach within 0.03 F1 wins"
+    },
+    "smoke": {
+      "approach": "clip_zeroshot",
+      "letter": "B",
+      "trained_by_me": false,
+      "threshold": 0.7843,
+      "val_f1": 0.8305,
+      "test_f1": 0.9215,
+      "rule": "best val F1, but a no-training approach within 0.03 F1 wins"
+    },
+    "flood": {
+      "approach": "clip_zeroshot",
+      "letter": "B",
+      "trained_by_me": false,
+      "threshold": 0.8733,
+      "val_f1": 0.972,
+      "test_f1": 0.9593,
+      "rule": "best val F1, but a no-training approach within 0.03 F1 wins"
+    },
+    "crash": {
+      "approach": "probe",
+      "probe_file": "models/incident_probe_crash.npz",
+      "letter": "C",
+      "trained_by_me": true,
+      "threshold": 0.5303,
+      "val_f1": 0.9701,
+      "test_f1": 0.9756,
+      "rule": "best val F1, but a no-training approach within 0.03 F1 wins"
+    }
+  }
+}

@@ -13,6 +13,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.infer.incidents import DEFAULTS as INCIDENT_DEFAULTS
+from src.infer.incidents import IncidentMonitor, IncidentScorer
+from src.infer.incidents import load_detector_cfg as load_incident_detector_cfg
 from src.utils.env import has_package
 from src.utils.io import ensure_dir, write_json
 
@@ -247,6 +250,13 @@ def _run_video_like_stream(
     state = DemoState()
     prebuffer_frames = max(1, int(round(config.get("runtime", {}).get("clip_seconds_before", 3) * fps)))
     prebuffer: deque[Any] = deque(maxlen=prebuffer_frames)
+    incident_cfg = {**INCIDENT_DEFAULTS, **(config.get("incidents") or {})}
+    inc_scorer = inc_monitor = None
+    inc_step = max(1, int(round(fps * float(incident_cfg["sample_seconds"]))))
+    if incident_cfg["enabled"]:
+        inc_det_cfg = load_incident_detector_cfg(incident_cfg["detectors_file"])
+        inc_scorer = IncidentScorer(inc_det_cfg, device=config.get("runtime", {}).get("device"))
+        inc_monitor = IncidentMonitor(inc_det_cfg, int(incident_cfg["k"]), int(incident_cfg["n"]), float(incident_cfg["cooldown_seconds"]))
     frame_idx = 0
     timeline_rows: list[dict[str, Any]] = []
     event_records: list[dict[str, Any]] = []
@@ -355,6 +365,17 @@ def _run_video_like_stream(
                 )
                 events.extend(incident_events)
                 event_records.extend(incident_event_records)
+            if inc_scorer is not None and (frame_idx - 1) % inc_step == 0:
+                for inc in inc_monitor.update(inc_scorer.score(frame), frame_idx / max(fps, 1e-6)):
+                    box = inc["box"] or [0, 0, width, height]
+                    inc_det = [{"class_name": inc["event_type"], "confidence": inc["confidence"], "track_id": None,
+                                "x1": box[0], "y1": box[1], "x2": box[2], "y2": box[3], "frame_idx": frame_idx}]
+                    artifact_info = _persist_event_clip(run_root, inc["event_type"], frame_idx, inc_det, frame, prebuffer, fps, source="incident_detector")
+                    record = _build_event_record(inc["event_type"], frame_idx, frame_idx / max(fps, 1e-6), inc_det, artifact_info, fps, source="incident_detector")
+                    record["incident_detector"] = {k: inc[k] for k in ("confidence", "max_score", "threshold", "positives_in_window", "window")}
+                    event_records.append(record)
+                    state.event_counts[inc["event_type"]] += 1
+                    events.append(inc["event_type"])
             if overlay is not None:  # drawn after the rules so the banner shows events fired on this frame
                 annotated = overlay.draw(frame, detections, events, frame_idx, latencies_ms[-1])
                 if incident_detections:
@@ -865,17 +886,20 @@ def _update_incident_rules(
         event_records.append(_build_event_record(event_type, frame_idx, now_ts, detections, artifact_info, fps, source="open_vocab"))
         state.event_counts[event_type] += 1
 
-    collision_events, collision_records = _update_collision_candidates(
-        state=state,
-        detections=standard_detections,
-        frame=frame,
-        fps=fps,
-        frame_idx=frame_idx,
-        run_root=run_root,
-        prebuffer=prebuffer,
-        overlap_iou_threshold=overlap_iou_threshold,
-        cooldown=cooldown,
-    )
+    if (config.get("incidents") or {}).get("legacy_iou_collision", False):  # legacy: replaced by the learned crash detector (src/infer/incidents.py)
+        collision_events, collision_records = _update_collision_candidates(
+            state=state,
+            detections=standard_detections,
+            frame=frame,
+            fps=fps,
+            frame_idx=frame_idx,
+            run_root=run_root,
+            prebuffer=prebuffer,
+            overlap_iou_threshold=overlap_iou_threshold,
+            cooldown=cooldown,
+        )
+    else:
+        collision_events, collision_records = [], []
     events.extend(collision_events)
     event_records.extend(collision_records)
 

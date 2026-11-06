@@ -1,0 +1,30 @@
+{
+  "device": "mps",
+  "unit": "ms per image, batch 1, incl. image load + preprocessing, images <= 640 px",
+  "ms": {
+    "fire": {
+      "A": 10.9,
+      "B": 22.7,
+      "C": 5.3,
+      "D": 9.1
+    },
+    "smoke": {
+      "A": 10.9,
+      "B": 22.9,
+      "C": 5.1,
+      "D": 4.7
+    },
+    "flood": {
+      "A": 11.6,
+      "B": 22.7,
+      "C": 22.7,
+      "D": 23.8
+    },
+    "crash": {
+      "A": 11.4,
+      "B": 22.8,
+      "C": 22.8,
+      "D": 60.2
+    }
+  }
+}

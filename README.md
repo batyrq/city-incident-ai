@@ -2,11 +2,51 @@
 
 ![demo: YOLO11s + ByteTrack on a city camera clip (boxes, track IDs, 1 s trails, FPS/latency HUD)](docs/demo.gif)
 
-Video analytics for city cameras: YOLO11s detection and ByteTrack tracking on a video file, rule-based events, and an annotated H.264 video plus JSON outputs. The default pipeline uses COCO-pretrained weights (no fine-tuning), tracks people and vehicles (`person, bicycle, car, motorcycle, bus, truck`), and runs two event rules, `stopped_vehicle` (dwell time + pixel-motion threshold) and `crowding` (person count). On an Apple M5 the full pipeline (decode, detect, track, rules, draw, write) ran at 48.1 FPS with PyTorch on the GPU (MPS) and 21.1 FPS with the ONNX model on CPU (300 frames of one clip; see Speed vs accuracy). Person detection and tracking are evaluated on MOT17; the event rules have no event-level ground truth yet. See [Limitations](#limitations) and [docs/ERROR_ANALYSIS.md](docs/ERROR_ANALYSIS.md).
+Video analytics for city cameras: YOLO11s detection and ByteTrack tracking on a video file, rule-based events, and an annotated H.264 video plus JSON outputs. The default pipeline uses COCO-pretrained weights (no fine-tuning) for tracking people and vehicles (`person, bicycle, car, motorcycle, bus, truck`), and runs two event rules, `stopped_vehicle` (dwell time + pixel-motion threshold) and `crowding` (person count). On an Apple M5 the full pipeline (decode, detect, track, rules, draw, write) ran at 48.1 FPS with PyTorch on the GPU (MPS) and 21.1 FPS with the ONNX model on CPU (300 frames of one clip; see Speed vs accuracy). Person detection and tracking are evaluated on MOT17; the event rules have no event-level ground truth yet. See [Limitations](#limitations) and [docs/ERROR_ANALYSIS.md](docs/ERROR_ANALYSIS.md).
 
 ![demo with --pose: yolo11n-pose skeletons on a rainy night clip](docs/demo_pose.gif)
 
 *`--pose` adds yolo11n-pose skeletons; the red banner is the `crowding` event firing.*
+
+## Incident detection (fire, smoke, flood, crash)
+
+The pipeline also detects incidents, not just objects: `fire`, `smoke`, `flood` and `crash_candidate` events with confidence, timestamp, thumbnail and clip (`src/infer/incidents.py`, config block `incidents:` in `configs/infer_pretrained_yolo11s.yaml`, on by default in the demo; `incidents.enabled: false` switches it off). A frame is scored every 0.5 s and a class fires when 3 of the last 5 scored frames pass its threshold. The old 2D box-IoU `collision_candidate` rule is only available as the legacy option `incidents.legacy_iou_collision: true`. Nine real incident clips are in `demo_videos/incidents/` and in the live-demo dropdown.
+
+<!-- incidents:start -->
+
+Test-split results (image level). **No training:** A open-vocabulary YOLO-World, B CLIP ViT-B/16 zero-shot, D ready-made community weights. **Trained by me:** C (fire/smoke: YOLO11n fine-tuned on D-Fire, 4 epochs in 45.7 min on MPS; flood/crash: logistic regression on frozen CLIP embeddings). Thresholds come from the validation split. Default per class (bold) = best validation F1, but a no-training approach wins when within 0.03 F1.
+
+| Class | Approach | Precision | Recall | F1 | ROC-AUC | FPR street | FPR hard neg. | ms/img |
+|---|---|---|---|---|---|---|---|---|
+| fire | A YOLO-World zero-shot | 33.3% | 100.0% | 0.500 | 0.512 | 100.0% | 100.0% | 11 |
+| fire | **B CLIP zero-shot** | 96.0% | 97.3% | 0.967 | 0.991 | 0.0% | 0.0% | 23 |
+| fire | D `rabahdev/fire-smoke-yolov8n` | 88.5% | 97.3% | 0.927 | 0.986 | 1.9% | 20.0% | 9 |
+| fire | C YOLO11n fine-tuned on D-Fire | 90.2% | 82.7% | 0.863 | 0.967 | 0.0% | 17.5% | 5 |
+| smoke | A YOLO-World zero-shot | 33.3% | 100.0% | 0.500 | 0.506 | 100.0% | 100.0% | 11 |
+| smoke | **B CLIP zero-shot** | 96.7% | 88.0% | 0.921 | 0.975 | 0.0% | 5.0% | 23 |
+| smoke | D `rabahdev/fire-smoke-yolov8n` | 88.0% | 95.7% | 0.917 | 0.983 | 2.5% | 20.0% | 5 |
+| smoke | C YOLO11n fine-tuned on D-Fire | 82.1% | 76.7% | 0.793 | 0.933 | 2.5% | 28.3% | 5 |
+| flood | A YOLO-World zero-shot | 42.3% | 78.7% | 0.550 | 0.644 | 73.8% | 37.8% | 12 |
+| flood | **B CLIP zero-shot** | 93.7% | 98.3% | 0.959 | 0.994 | 0.9% | 3.4% | 23 |
+| flood | D `prithivMLmods/Flood-Image-Detection` | 70.3% | 93.3% | 0.802 | 0.931 | 17.6% | 30.0% | 24 |
+| flood | C linear probe on CLIP | 97.4% | 99.3% | 0.984 | 0.999 | 0.9% | 2.6% | 23 |
+| crash | A YOLO-World zero-shot | 34.9% | 69.5% | 0.464 | 0.513 | 80.6% | 49.1% | 11 |
+| crash | B CLIP zero-shot | 74.0% | 95.4% | 0.833 | 0.958 | 16.9% | 25.9% | 23 |
+| crash | D `Enos-123/traffic-accident-detection-yolo11x` | 77.2% | 90.5% | 0.833 | 0.943 | 16.6% | 10.2% | 60 |
+| crash | **C linear probe on CLIP** | 95.9% | 99.2% | 0.976 | 0.996 | 3.1% | 0.0% | 23 |
+
+Test sets: 300 positives per class (crash 262 after de-duplication) and 600 negatives for fire/smoke; counts for every split in [docs/INCIDENT_DATA.md](docs/INCIDENT_DATA.md). Hard negatives: sunsets, car lights, neon, steam, rain, rivers, ambulances. Failure images with reasons: [docs/incident_failures/](docs/incident_failures/README.md); confusion matrices: `docs/incident_confusion/`.
+Prompt check for A: YOLO-World never separated fire (best ROC-AUC 0.51 over 5 wordings) and smoke only weakly (0.73).
+
+**Video level** (`reports/metrics/incident_videos.json`, 9 real incident clips, 20 normal clips = 354 s): 9 of 9 incident clips fired the expected class, but 2 of those fired *before* the incident started (the two crash clips). 3 false alarms on normal clips (d_rainy_night.mp4: flood at 18.5 s; e_treadmill_runner_side.mp4: smoke at 16.5 s; mixkit-41154 (neon): smoke at 5.5 s). Fire clips also fire `smoke` and vice versa, which is plausible: they show both.
+
+**The crash detector does not work on real video.** The probe scores 0.86 on average on a dashcam highway clip and 0.97 on a street CCTV clip where I saw no collision, against 0.91 on a dashcam crash clip: it learned camera style (positives are dashcam/CCTV frames, negatives mostly ordinary photos). The high image-level crash F1 is therefore a dataset artefact. Treat `crash_candidate` as experimental. Details: `reports/metrics/incident_crash_audit.json`.
+
+Ready-made weights (D): `rabahdev/fire-smoke-yolov8n` (AGPL-3.0, trained on the D-Fire official train split, so D-Fire test images were not in its training; my validation holdout was, so its validation threshold is optimistic and D was excluded from the default choice for fire/smoke), `prithivMLmods/Flood-Image-Detection` (Apache-2.0, SigLIP2 fine-tuned on TheNetherWatcher/DisasterClassification), `Enos-123/traffic-accident-detection-yolo11x` (MIT, trained on a Roboflow accident dataset that may overlap the CCTV accident frames I test on, so its crash numbers may be optimistic). D is evaluated but not wired into the pipeline.
+
+<!-- incidents:end -->
+
+Reproduce: `python -m eval.incidents_download && python -m eval.incidents_clips && python -m eval.incidents_data`, then `python -m eval.incidents_train_yolo 0.75`, `python -m eval.incidents_eval scores && python -m eval.incidents_eval metrics && python -m eval.incidents_eval latency`, `python -m eval.incidents_failures`, `python -m eval.incidents_videos`, `python -m eval.incidents_crash_audit`, `python -m eval.incidents_docs`.
 
 ## Results
 
@@ -195,10 +235,11 @@ Five data-backed failure cases (small people, occlusion, an ID switch, the rainy
 
 ## Limitations
 
-- **COCO classes only, no fine-tuning.** Detection is the pretrained YOLO11s; there are no custom classes (fire, smoke, potholes, accidents are not detected by the default pipeline).
+- **Tracked objects are COCO classes only.** Detection is the pretrained YOLO11s. Fire, smoke, flood and crash come from separate image-level classifiers (see Incident detection); potholes are not detected.
+- **Incident detectors are scored on image datasets, then checked on only nine incident clips.** Test negatives from video are correlated frames from few clips, the two flood/crash negative sources state no licence, and `crash_candidate` fires on dashcam/CCTV style rather than on collisions (it fired before the collision in both crash clips and on two dashcam/CCTV clips without a collision I could see). Fire and smoke fire together on fire clips, and CLIP zero-shot gave false alarms on a dark neon-hotel clip (smoke), a rainy night clip (flood) and a treadmill clip (smoke). Fire/smoke trained for only 4 epochs.
 - **Small and occluded people are mostly missed** (measured: 0 of 254 people under 50 px and 3.4 % of people with visibility < 0.3 are found at conf 0.35 on MOT17). Details: [docs/ERROR_ANALYSIS.md](docs/ERROR_ANALYSIS.md).
 - **Event rules are pixel-threshold heuristics with no event-level ground truth.** `stopped_vehicle` and `crowding` thresholds (6 px motion, 15 s dwell, 12 people) are not calibrated per camera, and I have not measured their precision or recall; the MOT17 and clip results above evaluate detection and tracking only.
-- **`collision_candidate` is a 2D box-IoU rule and is off in the default config.** It exists only in the experimental `incident_enhanced` mode; every candidate inspected in the demo clips was a detection artifact, not a collision (see the error analysis).
+- **The legacy `collision_candidate` 2D box-IoU rule is off** (`incidents.legacy_iou_collision`, only in the experimental `incident_enhanced` mode); every candidate inspected in the demo clips was a detection artifact, not a collision (see the error analysis). The learned crash detector replaces it but is itself weak.
 - **Open-vocabulary and incident-enhanced modes are experimental** and were not evaluated or re-tested in this round of work; the open-vocabulary path may fall back to pretrained YOLO11s.
 - **Evaluation scope:** three MOT17 sequences (person only), no vehicle benchmark, no night/rain benchmark; the demo clips have no ground truth. MOT17 metrics are computed with py-motmetrics, not the official TrackEval/HOTA.
 - Speed numbers are single runs on one machine (Apple M5, 16 GB).

@@ -17,7 +17,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from demo import run_demo  # noqa: E402
-from demo_presets import DIR, LICENCE, PRESETS  # noqa: E402
+from demo_presets import DIR, LICENCE  # noqa: E402
+from demo_presets import PRESETS as ALL_PRESETS  # noqa: E402
+
+PRESETS = [p for p in ALL_PRESETS if "/" not in p["file"]]  # the six street clips; incident clips have their own report
 
 
 def probe(path: Path) -> dict:

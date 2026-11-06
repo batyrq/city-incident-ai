@@ -26,6 +26,14 @@ rules:
     confirm_window_frames: 5
     min_confirm_frames: 3
     cooldown_seconds: 90
+incidents:  # fire / smoke / flood / crash detection (src/infer/incidents.py); set enabled: false to switch off
+  enabled: true
+  detectors_file: configs/incident_detectors.json  # per-class approach + validation thresholds, written by eval/incidents_eval.py
+  sample_seconds: 0.5   # score one frame every 0.5 s
+  k: 3                  # fire when 3 of the last 5 sampled frames are above the class threshold
+  n: 5
+  cooldown_seconds: 10
+  legacy_iou_collision: false  # old rule: two vehicle boxes overlap (IoU) -> collision_candidate. Only used by the open-vocab incident path; off because the learned crash detector replaces it
 streams:
   - camera_id: demo_cam_01
     uri: rtsp://127.0.0.1:8554/live

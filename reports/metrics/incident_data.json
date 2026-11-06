@@ -1,0 +1,103 @@
+{
+  "image_counts": {
+    "fire/train": {
+      "neg_street": 80,
+      "neg_hard": 240
+    },
+    "fire/val": {
+      "neg_street": 40,
+      "neg_hard": 96,
+      "pos": 200,
+      "neg_background": 264
+    },
+    "fire/test": {
+      "neg_street": 160,
+      "neg_hard": 120,
+      "pos": 300,
+      "neg_background": 320
+    },
+    "smoke/train": {
+      "neg_street": 80,
+      "neg_hard": 240
+    },
+    "smoke/val": {
+      "neg_street": 40,
+      "neg_hard": 96,
+      "pos": 200,
+      "neg_background": 264
+    },
+    "smoke/test": {
+      "neg_street": 160,
+      "neg_hard": 120,
+      "pos": 300,
+      "neg_background": 320
+    },
+    "flood/train": {
+      "neg_street": 458,
+      "neg_hard": 727,
+      "pos": 1033,
+      "neg_background": 620
+    },
+    "flood/val": {
+      "neg_street": 100,
+      "neg_hard": 183,
+      "pos": 200,
+      "neg_background": 117
+    },
+    "flood/test": {
+      "neg_street": 233,
+      "neg_hard": 233,
+      "pos": 300,
+      "neg_background": 134
+    },
+    "crash/train": {
+      "neg_street": 408,
+      "neg_hard": 180,
+      "pos": 1500
+    },
+    "crash/val": {
+      "neg_street": 172,
+      "neg_hard": 96,
+      "pos": 200
+    },
+    "crash/test": {
+      "neg_street": 356,
+      "neg_hard": 108,
+      "pos": 262
+    }
+  },
+  "dfire_official": {
+    "train": {
+      "images": 17221,
+      "with_fire": 4707,
+      "with_smoke": 8444,
+      "no_label": 7833
+    },
+    "test": {
+      "images": 4306,
+      "with_fire": 1115,
+      "with_smoke": 2081,
+      "no_label": 2005
+    }
+  },
+  "dfire_train_used_for_yolo": 15536,
+  "dfire_holdout_val": 1685,
+  "near_duplicates_removed_from_eval": {
+    "fire:positive": 149,
+    "fire:negative": 469,
+    "smoke:positive": 197,
+    "smoke:negative": 519,
+    "crash:positive": 157,
+    "flood:positive": 7,
+    "flood:negative": 27
+  },
+  "negative_clips_by_split": {
+    "('train', 'street')": 2,
+    "('val', 'street')": 1,
+    "('test', 'street')": 4,
+    "('test', 'hard')": 14,
+    "('val', 'hard')": 12,
+    "('train', 'hard')": 26
+  },
+  "max_side_px": 640
+}

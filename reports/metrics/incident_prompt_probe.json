@@ -1,0 +1,115 @@
+{
+  "fire": [
+    {
+      "prompts": [
+        "fire"
+      ],
+      "roc_auc": 0.347,
+      "positives_with_any_box": 19,
+      "n_pos": 60,
+      "negatives_with_any_box": 73,
+      "n_neg": 120,
+      "max_score_on_positives": 0.0011,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "flame"
+      ],
+      "roc_auc": 0.305,
+      "positives_with_any_box": 18,
+      "n_pos": 60,
+      "negatives_with_any_box": 74,
+      "n_neg": 120,
+      "max_score_on_positives": 0.001,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "a fire"
+      ],
+      "roc_auc": 0.513,
+      "positives_with_any_box": 37,
+      "n_pos": 60,
+      "negatives_with_any_box": 77,
+      "n_neg": 120,
+      "max_score_on_positives": 0.017,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "burning fire",
+        "fire flames"
+      ],
+      "roc_auc": 0.347,
+      "positives_with_any_box": 18,
+      "n_pos": 60,
+      "negatives_with_any_box": 72,
+      "n_neg": 120,
+      "max_score_on_positives": 0.0031,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "wildfire"
+      ],
+      "roc_auc": 0.495,
+      "positives_with_any_box": 28,
+      "n_pos": 60,
+      "negatives_with_any_box": 64,
+      "n_neg": 120,
+      "max_score_on_positives": 0.0028,
+      "conf_floor": 0.0001
+    }
+  ],
+  "smoke": [
+    {
+      "prompts": [
+        "smoke"
+      ],
+      "roc_auc": 0.32,
+      "positives_with_any_box": 14,
+      "n_pos": 60,
+      "negatives_with_any_box": 64,
+      "n_neg": 120,
+      "max_score_on_positives": 0.0011,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "a plume of smoke"
+      ],
+      "roc_auc": 0.533,
+      "positives_with_any_box": 60,
+      "n_pos": 60,
+      "negatives_with_any_box": 108,
+      "n_neg": 120,
+      "max_score_on_positives": 0.1265,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "smoke cloud"
+      ],
+      "roc_auc": 0.732,
+      "positives_with_any_box": 42,
+      "n_pos": 60,
+      "negatives_with_any_box": 52,
+      "n_neg": 120,
+      "max_score_on_positives": 0.0516,
+      "conf_floor": 0.0001
+    },
+    {
+      "prompts": [
+        "wildfire smoke"
+      ],
+      "roc_auc": 0.541,
+      "positives_with_any_box": 60,
+      "n_pos": 60,
+      "negatives_with_any_box": 112,
+      "n_neg": 120,
+      "max_score_on_positives": 0.3256,
+      "conf_floor": 0.0001
+    }
+  ]
+}

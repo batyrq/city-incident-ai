@@ -1,0 +1,223 @@
+{
+  "fire": {
+    "approach": "clip_zeroshot",
+    "threshold": 0.7415,
+    "n_fp": 12,
+    "n_fn": 8,
+    "items": [
+      {
+        "file": "fire_FP1_s1.00.jpg",
+        "kind": "FP",
+        "score": 0.996927,
+        "group": "background",
+        "source": "D-Fire (no label)",
+        "path": "data/incidents/fire/test/dfire_WEB10403.jpg",
+        "committed": true
+      },
+      {
+        "file": "fire_FP2_s1.00.jpg",
+        "kind": "FP",
+        "score": 0.995754,
+        "group": "background",
+        "source": "D-Fire (no label)",
+        "path": "data/incidents/fire/test/dfire_WEB09658.jpg",
+        "committed": true
+      },
+      {
+        "file": "fire_FN1_s0.00.jpg",
+        "kind": "FN",
+        "score": 0.004782,
+        "group": "positive",
+        "source": "D-Fire",
+        "path": "data/incidents/fire/test/dfire_AoF07866.jpg",
+        "committed": true
+      },
+      {
+        "file": "fire_FN2_s0.01.jpg",
+        "kind": "FN",
+        "score": 0.007078,
+        "group": "positive",
+        "source": "D-Fire",
+        "path": "data/incidents/fire/test/dfire_WEB10039.jpg",
+        "committed": true
+      },
+      {
+        "file": "fire_FN3_s0.01.jpg",
+        "kind": "FN",
+        "score": 0.009039,
+        "group": "positive",
+        "source": "D-Fire",
+        "path": "data/incidents/fire/test/dfire_AoF07869.jpg",
+        "committed": true
+      }
+    ]
+  },
+  "smoke": {
+    "approach": "clip_zeroshot",
+    "threshold": 0.7843,
+    "n_fp": 9,
+    "n_fn": 36,
+    "items": [
+      {
+        "file": "smoke_FP1_s0.93.jpg",
+        "kind": "FP",
+        "score": 0.93472,
+        "group": "background",
+        "source": "D-Fire (no label)",
+        "path": "data/incidents/smoke/test/dfire_WEB10395.jpg",
+        "committed": true
+      },
+      {
+        "file": "smoke_FP2_s0.88.jpg",
+        "kind": "FP",
+        "score": 0.877602,
+        "group": "hard",
+        "source": "Mixkit 41154 (neon)",
+        "path": "data/incidents/smoke/test/mixkit-41154_09.jpg",
+        "committed": true
+      },
+      {
+        "file": "smoke_FP3_s0.86.jpg",
+        "kind": "FP",
+        "score": 0.856943,
+        "group": "hard",
+        "source": "Mixkit 41154 (neon)",
+        "path": "data/incidents/smoke/test/mixkit-41154_00.jpg",
+        "committed": true
+      },
+      {
+        "file": "smoke_FN1_s0.01.jpg",
+        "kind": "FN",
+        "score": 0.00964,
+        "group": "positive",
+        "source": "D-Fire",
+        "path": "data/incidents/smoke/test/dfire_WEB11210.jpg",
+        "committed": true
+      },
+      {
+        "file": "smoke_FN2_s0.02.jpg",
+        "kind": "FN",
+        "score": 0.016753,
+        "group": "positive",
+        "source": "D-Fire",
+        "path": "data/incidents/smoke/test/dfire_WEB11461.jpg",
+        "committed": true
+      },
+      {
+        "file": "smoke_FN3_s0.02.jpg",
+        "kind": "FN",
+        "score": 0.021042,
+        "group": "positive",
+        "source": "D-Fire",
+        "path": "data/incidents/smoke/test/dfire_WEB11083.jpg",
+        "committed": true
+      }
+    ]
+  },
+  "flood": {
+    "approach": "clip_zeroshot",
+    "threshold": 0.8733,
+    "n_fp": 20,
+    "n_fn": 5,
+    "items": [
+      {
+        "file": "flood_FP1_s1.00.jpg",
+        "kind": "FP",
+        "score": 0.997138,
+        "group": "hard",
+        "source": "zinnia82 (river)",
+        "path": "data/incidents/flood/test/fl_test_n0124.jpg",
+        "committed": false
+      },
+      {
+        "file": "flood_FP2_s1.00.jpg",
+        "kind": "FP",
+        "score": 0.995609,
+        "group": "hard",
+        "source": "zinnia82 (river)",
+        "path": "data/incidents/flood/test/fl_test_n0284.jpg",
+        "committed": false
+      },
+      {
+        "file": "flood_FP3_s0.95.jpg",
+        "kind": "FP",
+        "score": 0.948661,
+        "group": "background",
+        "source": "zinnia82 (animal)",
+        "path": "data/incidents/flood/test/fl_test_n0291.jpg",
+        "committed": false
+      },
+      {
+        "file": "flood_FN1_s0.39.jpg",
+        "kind": "FN",
+        "score": 0.391515,
+        "group": "positive",
+        "source": "zinnia82/flood-binary-hnm-benchmark",
+        "path": "data/incidents/flood/test/fl_test_p0157.jpg",
+        "committed": false
+      },
+      {
+        "file": "flood_FN2_s0.45.jpg",
+        "kind": "FN",
+        "score": 0.450454,
+        "group": "positive",
+        "source": "zinnia82/flood-binary-hnm-benchmark",
+        "path": "data/incidents/flood/test/fl_test_p0016.jpg",
+        "committed": false
+      },
+      {
+        "file": "flood_FN3_s0.50.jpg",
+        "kind": "FN",
+        "score": 0.502517,
+        "group": "positive",
+        "source": "zinnia82/flood-binary-hnm-benchmark",
+        "path": "data/incidents/flood/test/fl_test_p0188.jpg",
+        "committed": false
+      }
+    ]
+  },
+  "crash": {
+    "approach": "probe",
+    "threshold": 0.5303,
+    "n_fp": 11,
+    "n_fn": 2,
+    "items": [
+      {
+        "file": "crash_FP1_s0.96.jpg",
+        "kind": "FP",
+        "score": 0.958062,
+        "group": "street",
+        "source": "hiennguyen9874/traffic-accident-detection (non-accident, licence not stated)",
+        "path": "data/incidents/crash/test/hn_test_0113.jpg",
+        "committed": false
+      },
+      {
+        "file": "crash_FP2_s0.91.jpg",
+        "kind": "FP",
+        "score": 0.90625,
+        "group": "street",
+        "source": "hiennguyen9874/traffic-accident-detection (non-accident, licence not stated)",
+        "path": "data/incidents/crash/test/hn_test_0180.jpg",
+        "committed": false
+      },
+      {
+        "file": "crash_FN1_s0.45.jpg",
+        "kind": "FN",
+        "score": 0.445862,
+        "group": "positive",
+        "source": "justjuu/traffic-accident-cctv-object-detection (CC0)",
+        "path": "data/incidents/crash/test/jj_test_0252.jpg",
+        "committed": true
+      },
+      {
+        "file": "crash_FN2_s0.45.jpg",
+        "kind": "FN",
+        "score": 0.446557,
+        "group": "positive",
+        "source": "justjuu/traffic-accident-cctv-object-detection (CC0)",
+        "path": "data/incidents/crash/test/jj_test_0097.jpg",
+        "committed": true
+      }
+    ]
+  }
+}

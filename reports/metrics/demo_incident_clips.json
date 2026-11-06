@@ -1,0 +1,283 @@
+[
+  {
+    "id": "g",
+    "file": "incidents/fire_building_burning.mp4",
+    "label": "g \u00b7 Fire: building burning",
+    "licence": "Mixkit Stock Video Free License",
+    "source": "https://mixkit.co/free-stock-video/building-burning-down-22587/",
+    "origin": "mixkit 22587, first 20 s",
+    "shows": "Flames and smoke fill the frame.",
+    "note": "",
+    "seconds": 20.0,
+    "expected": "fire",
+    "incident_from_s": 0.0,
+    "frames": 600,
+    "pipeline_fps": 44.369,
+    "events": [
+      {
+        "type": "fire",
+        "at_s": 1.033,
+        "confidence": 0.9997
+      },
+      {
+        "type": "smoke",
+        "at_s": 1.033,
+        "confidence": 0.9946
+      },
+      {
+        "type": "fire",
+        "at_s": 11.033,
+        "confidence": 0.9998
+      },
+      {
+        "type": "smoke",
+        "at_s": 11.033,
+        "confidence": 0.9953
+      }
+    ],
+    "other_events": []
+  },
+  {
+    "id": "h",
+    "file": "incidents/fire_grass_firefighter.mp4",
+    "label": "h \u00b7 Fire: grass fire",
+    "licence": "Mixkit Stock Video Free License",
+    "source": "https://mixkit.co/free-stock-video/an-aggressive-fire-consuming-the-nature-32370/",
+    "origin": "mixkit 32370, whole clip",
+    "shows": "Grass fire with a firefighter walking past.",
+    "note": "",
+    "seconds": 10.5,
+    "expected": "fire",
+    "incident_from_s": 0.0,
+    "frames": 314,
+    "pipeline_fps": 40.537,
+    "events": [
+      {
+        "type": "fire",
+        "at_s": 1.033,
+        "confidence": 0.9994
+      },
+      {
+        "type": "smoke",
+        "at_s": 1.033,
+        "confidence": 0.9985
+      }
+    ],
+    "other_events": []
+  },
+  {
+    "id": "i",
+    "file": "incidents/smoke_city_building_fire.mp4",
+    "label": "i \u00b7 Smoke: city building fire",
+    "licence": "Mixkit Stock Video Free License",
+    "source": "https://mixkit.co/free-stock-video/firefighters-putting-out-a-big-fire-5280/",
+    "origin": "mixkit 5280, first 20 s",
+    "shows": "Aerial view of a large smoke plume over a street with fire engines.",
+    "note": "",
+    "seconds": 20.0,
+    "expected": "smoke",
+    "incident_from_s": 0.0,
+    "frames": 600,
+    "pipeline_fps": 42.491,
+    "events": [
+      {
+        "type": "fire",
+        "at_s": 1.033,
+        "confidence": 0.9997
+      },
+      {
+        "type": "smoke",
+        "at_s": 1.033,
+        "confidence": 0.9856
+      },
+      {
+        "type": "fire",
+        "at_s": 11.033,
+        "confidence": 0.9996
+      },
+      {
+        "type": "smoke",
+        "at_s": 11.033,
+        "confidence": 0.9762
+      }
+    ],
+    "other_events": [
+      "stopped_vehicle"
+    ]
+  },
+  {
+    "id": "j",
+    "file": "incidents/crash_dashcam_highway.mp4",
+    "label": "j \u00b7 Crash: dashcam highway",
+    "licence": "Public domain (Wikimedia Commons; dashcam footage)",
+    "source": "https://commons.wikimedia.org/wiki/File:White_cars_hit_the_lane_divider_at_high_speed_on_the_highway.webm",
+    "origin": "Commons, first 20 s",
+    "shows": "Dashcam: cars collide ahead at about 2-7 s.",
+    "note": "The crash detector fires at its first possible moment, before the collision. It also fires on dashcam clips with no crash (see the audit in the README).",
+    "seconds": 20.0,
+    "expected": "crash",
+    "incident_from_s": 2.0,
+    "frames": 600,
+    "pipeline_fps": 43.022,
+    "events": [
+      {
+        "type": "crash_candidate",
+        "at_s": 1.033,
+        "confidence": 0.9378
+      },
+      {
+        "type": "fire",
+        "at_s": 8.033,
+        "confidence": 0.8802
+      },
+      {
+        "type": "crash_candidate",
+        "at_s": 11.033,
+        "confidence": 0.9393
+      }
+    ],
+    "other_events": []
+  },
+  {
+    "id": "k",
+    "file": "incidents/crash_dashcam_truck.mp4",
+    "label": "k \u00b7 Crash: dashcam truck",
+    "licence": "Public domain (Wikimedia Commons; dashcam footage)",
+    "source": "https://commons.wikimedia.org/wiki/File:The_speeding_car_rear-ended_into_the_truck_in_front%2C_and_the_front_hood_was_blown_open.webm",
+    "origin": "Commons, 12-30 s",
+    "shows": "Dashcam behind a truck, collision at about 8.5 s.",
+    "note": "Fires long before the collision at about 8.5 s (camera-style bias).",
+    "seconds": 18.0,
+    "expected": "crash",
+    "incident_from_s": 8.5,
+    "frames": 540,
+    "pipeline_fps": 47.372,
+    "events": [
+      {
+        "type": "crash_candidate",
+        "at_s": 1.033,
+        "confidence": 0.886
+      },
+      {
+        "type": "crash_candidate",
+        "at_s": 11.033,
+        "confidence": 0.7455
+      }
+    ],
+    "other_events": []
+  },
+  {
+    "id": "l",
+    "file": "incidents/crash_aftermath_truck.mp4",
+    "label": "l \u00b7 Crash: aftermath",
+    "licence": "Mixkit Stock Video Free License",
+    "source": "https://mixkit.co/free-stock-video/trailer-crash-on-a-highway-49147/",
+    "origin": "mixkit 49147, whole clip",
+    "shows": "Static shot of a lorry cab lying on its side.",
+    "note": "",
+    "seconds": 8.2,
+    "expected": "crash",
+    "incident_from_s": 0.0,
+    "frames": 245,
+    "pipeline_fps": 35.706,
+    "events": [
+      {
+        "type": "crash_candidate",
+        "at_s": 1.033,
+        "confidence": 0.6211
+      }
+    ],
+    "other_events": []
+  },
+  {
+    "id": "m",
+    "file": "incidents/flood_street_muddy.mp4",
+    "label": "m \u00b7 Flood: muddy street",
+    "licence": "CC BY-SA 4.0 (Amuzujoe, Wikimedia Commons)",
+    "source": "https://commons.wikimedia.org/wiki/File:Flood_on_the_street.webm",
+    "origin": "Commons, whole clip",
+    "shows": "Street fully under brown water, handheld.",
+    "note": "",
+    "seconds": 12.3,
+    "expected": "flood",
+    "incident_from_s": 0.0,
+    "frames": 370,
+    "pipeline_fps": 41.705,
+    "events": [
+      {
+        "type": "flood",
+        "at_s": 2.033,
+        "confidence": 0.9729
+      },
+      {
+        "type": "flood",
+        "at_s": 12.033,
+        "confidence": 0.9456
+      }
+    ],
+    "other_events": []
+  },
+  {
+    "id": "n",
+    "file": "incidents/flood_street_zhengzhou.mp4",
+    "label": "n \u00b7 Flood: Zhengzhou street",
+    "licence": "CC BY 3.0 (China News Service, Wikimedia Commons)",
+    "source": "https://commons.wikimedia.org/wiki/File:Zhengzhou_streets_during_the_flood_2021-07-20.webm",
+    "origin": "Commons, first 16 s",
+    "shows": "People wading through a flooded street.",
+    "note": "Has a Chinese news overlay; the crash detector also fires once.",
+    "seconds": 16.0,
+    "expected": "flood",
+    "incident_from_s": 0.0,
+    "frames": 400,
+    "pipeline_fps": 37.779,
+    "events": [
+      {
+        "type": "flood",
+        "at_s": 1.0,
+        "confidence": 0.9496
+      },
+      {
+        "type": "crash_candidate",
+        "at_s": 2.44,
+        "confidence": 0.5919
+      },
+      {
+        "type": "flood",
+        "at_s": 11.08,
+        "confidence": 0.9758
+      }
+    ],
+    "other_events": [
+      "crowding"
+    ]
+  },
+  {
+    "id": "o",
+    "file": "incidents/flood_street_manila.mp4",
+    "label": "o \u00b7 Flood: Manila street",
+    "licence": "CC BY-SA 4.0 (Exec8, Wikimedia Commons)",
+    "source": "https://commons.wikimedia.org/wiki/File:Flooding_in_Hereford_Street%2C_Project_8%2C_Quezon_City%2C_Philippines_from_Typhoon_Ketsana_%28Ondoy%29_2.webm",
+    "origin": "Commons, first 20 s",
+    "shows": "Flooded street seen from a vehicle (10 fps source).",
+    "note": "",
+    "seconds": 20.0,
+    "expected": "flood",
+    "incident_from_s": 0.0,
+    "frames": 200,
+    "pipeline_fps": 35.929,
+    "events": [
+      {
+        "type": "flood",
+        "at_s": 1.1,
+        "confidence": 0.9676
+      },
+      {
+        "type": "flood",
+        "at_s": 11.1,
+        "confidence": 0.952
+      }
+    ],
+    "other_events": []
+  }
+]

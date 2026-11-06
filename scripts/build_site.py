@@ -50,6 +50,91 @@ def error_sections() -> dict[str, dict[str, str]]:
     return out
 
 
+INC_NAMES = {"A": "A · open-vocabulary YOLO-World", "B": "B · CLIP zero-shot", "D": "D · ready community weights", "C": "C · trained by me"}
+INC_C_NAMES = {"fire": "YOLO11n fine-tuned on D-Fire", "smoke": "YOLO11n fine-tuned on D-Fire", "flood": "linear probe on CLIP", "crash": "linear probe on CLIP"}
+INC_D_NAMES = {"fire": "rabahdev YOLOv8n (D-Fire)", "smoke": "rabahdev YOLOv8n (D-Fire)", "flood": "prithivMLmods SigLIP2", "crash": "Enos-123 YOLO11x (Roboflow)"}
+
+
+def incident_section(row, pct):
+    inc, lat, vid = jl("incidents.json"), jl("incident_latency.json"), jl("incident_videos.json")
+    dat, aud, ytr = jl("incident_data.json"), jl("incident_crash_audit.json"), jl("incident_yolo_train.json")
+    dcfg = json.loads((ROOT / "configs" / "incident_detectors.json").read_text())["classes"]
+    prm = jl("incident_prompt_probe.json")
+    classes = ["fire", "smoke", "flood", "crash"]
+    pos_name = {"fire": "fire", "smoke": "smoke", "flood": "flood", "crash": "crash"}
+    # ---- table
+    rows = []
+    for c in classes:
+        n = inc[c]["B"]
+        rows.append(f'<tr class="grp"><td colspan="10"><b>{c}</b> · test set: {n["n_pos"]} positives, {n["n_neg_street"]} street + {n["n_neg_hard"]} hard' + (f' + {n["n_neg_background"]} other' if n["n_neg_background"] else "") + " negatives</td></tr>")
+        for ap in ("A", "B", "D", "C"):
+            m = inc[c].get(ap)
+            if not m:
+                continue
+            name = {"A": "A · YOLO-World zero-shot", "B": "B · CLIP ViT-B/16 zero-shot", "D": "D · " + INC_D_NAMES[c], "C": "C · " + INC_C_NAMES[c]}[ap]
+            grp = "trained by me" if ap == "C" else "no training"
+            f = lambda v: "–" if v is None else pct(v)
+            rows.append(row([name, grp, f(m["precision"]), f(m["recall"]), f"{m['f1']:.3f}", f"{m['roc_auc']:.3f}", f(m["fpr_street"]), f(m["fpr_hard"]), f(m["fpr_background"]),
+                             f"{lat['ms'][c][ap]:.0f}"], "hl" if dcfg[c]["letter"] == ap else ""))
+    table = "".join(rows)
+    # ---- chart data
+    chart = {"classes": classes, "approaches": {ap: {"label": INC_NAMES[ap], "f1": [inc[c][ap]["f1"] if ap in inc[c] else None for c in classes],
+                                                     "fpr_hard": [inc[c][ap]["fpr_hard"] if ap in inc[c] else None for c in classes],
+                                                     "fpr_street": [inc[c][ap]["fpr_street"] if ap in inc[c] else None for c in classes]} for ap in ("A", "B", "D", "C")}}
+    # ---- default per class
+    dflt = "".join(f'<li><b>{c}</b>: {INC_NAMES[v["letter"]].split(" · ")[1] if v["letter"] != "C" else INC_C_NAMES[c]} ({"trained by me" if v["trained_by_me"] else "no training"}), threshold {v["threshold"]:.3f}, '
+                   f'validation F1 {v["val_f1"]:.3f}, test F1 {v["test_f1"]:.3f}</li>' for c, v in dcfg.items())
+    # ---- failure gallery
+    src = ROOT / "docs" / "incident_failures"
+    (SITE / "img" / "incident_failures").mkdir(parents=True, exist_ok=True)
+    reasons = {}
+    for m in re.finditer(r"^\| `([^`]+)` \| ([^|]+) \| ([^|]+) \| (.+) \|$", (src / "README.md").read_text(), re.M):
+        reasons[m.group(1)] = (m.group(2).strip(), m.group(3).strip(), m.group(4).strip())
+    cards = []
+    for fn, (kind, score, why) in reasons.items():
+        if (src / fn).exists():
+            shutil.copy(src / fn, SITE / "img" / "incident_failures" / fn)
+            cards.append(f'<figure class="fail"><a href="img/incident_failures/{fn}" target="_blank"><img loading="lazy" src="img/incident_failures/{fn}" alt="{html.escape(kind)}"></a>'
+                         f'<figcaption><b>{html.escape(kind)}</b> · score {html.escape(score)}<br>{md_inline(why)}</figcaption></figure>')
+    gallery = "".join(cards)
+    # ---- video tables
+    vs = vid["summary"]
+    vr = []
+    for name, r in vid["incident_clips"].items():
+        first = "–" if r["first_fire_s"] is None else f"{r['first_fire_s']:.1f} s"
+        timing = "none" if r["first_fire_s"] is None else ("<b>before the incident</b>" if r["fired_before_incident_started"] else f"{r['delay_after_incident_start_s']:.1f} s after start")
+        other = ", ".join(f"{k} at {v[0]:.1f} s" for k, v in r["other_classes_fired"].items()) or "–"
+        vr.append(row([name.replace("_", " "), r["expected"], f"{r['incident_from_s']:.1f} s", first, timing, other], ""))
+    nf = [(k, r["false_alarms"]) for k, r in vid["normal_clips"].items() if r["false_alarms"]]
+    fa = "; ".join(f"{html.escape(k.replace('demo_videos/', ''))}: " + ", ".join(f"{c} at {v[0]:.1f} s" for c, v in d.items()) for k, d in nf) or "none"
+    ctl = vid["dashcam_controls_no_collision_seen"]
+    aud_c = aud["clips"]
+    mean = lambda k, ap: aud_c[k][f"mean_{ap}"]
+    ck = [k for k in aud_c if k.startswith("control")]
+    n_inc, n_test_neg = vs["incident_clips"], vs["normal_clips"]
+    sys.path.insert(0, str(ROOT))
+    from eval.incidents_clips import HARD
+    n_hard = len(HARD)
+    data_line = (f"Test sets are built from open labelled data, de-duplicated against training with a perceptual hash: D-Fire (fire, smoke), justjuu CCTV accident frames (crash), "
+                 f"zinnia82 street-level floods (flood), with negatives from MOT17, the demo clips and {n_hard} Mixkit clips of hard cases (sunsets, brake lights, neon, steam, rain, rivers, ambulances). "
+                 f"Split by source clip, so no clip is in two splits.")
+    htm = {
+        "__INC_TABLE__": table, "__INC_DEFAULTS__": dflt, "__INC_GALLERY__": gallery, "__INC_VIDEO_ROWS__": "".join(vr), "__INC_DATA_LINE__": data_line,
+        "__INC_VID_SUMMARY__": f'{vs["detected"]} of {n_inc} incident clips fired the right class; <b>{vs["detected_before_incident_started"]}</b> of those fired before the incident started (both crash clips). '
+                               f'On {n_test_neg} normal clips ({vs["normal_seconds_scored"]:.0f} s) there were {vs["false_alarms_total"]} false alarms: {fa}.',
+        "__INC_CRASH_AUDIT__": f'Mean crash score every 0.5 s: probe C {mean("crash_dashcam_highway (crash 2-7 s)", "C"):.2f} on the dashcam crash clip, but also {mean(ck[0], "C"):.2f} on a dashcam highway clip and '
+                               f'{mean(ck[1], "C"):.2f} on a street CCTV clip in which I saw no collision. CLIP zero-shot B scores {mean("crash_dashcam_highway (crash 2-7 s)", "B"):.2f} on the crash clip and {mean(ck[0], "B"):.2f} / {mean(ck[1], "B"):.2f} on the controls. '
+                               f'The ready-made YOLO11x model D barely fires on any of them (mean {mean("crash_dashcam_highway (crash 2-7 s)", "D"):.2f}). So the high image-level F1 mostly measures camera style: positives are dashcam/CCTV frames, negatives are mostly ordinary photos.',
+        "__INC_TRAIN__": f'{ytr["epochs_completed"]} epochs in {ytr["wall_minutes"]} minutes on the Mac GPU (time-boxed to 45 min; mAP50 on the D-Fire holdout {float(ytr["last_epoch"]["metrics/mAP50(B)"]):.2f})',
+        "__INC_PROMPT__": f'YOLO-World never found fire: best of {len(prm["fire"])} prompt wordings reached ROC-AUC {max(x["roc_auc"] for x in prm["fire"]):.2f} on validation, smoke {max(x["roc_auc"] for x in prm["smoke"]):.2f}',
+    }
+    return htm, chart
+
+
+def error_sections_placeholder():
+    return None
+
+
 def main() -> None:
     det, trk, abl, spd = jl("detection.json"), jl("tracking.json"), jl("tracking_conf_ablation.json"), jl("speed.json")
     err, i8, prc = jl("error_analysis.json"), jl("int8_debug.json"), jl("pr_curve.json")
@@ -160,14 +245,16 @@ def main() -> None:
 
     fp, hp, fl = i8["outputs"]["fp32"], i8["outputs"]["int8_head_fp32"], i8["outputs"]["int8_full_graph"]
     gait = Path(ROOT / "docs" / "demo_pose_runner.gif").exists()
+    inc_html, inc_chart = incident_section(row, pct)
+    data["incidents"] = inc_chart
     page = TEMPLATE
-    repl = {
+    repl = {**inc_html,
         "__STATS__": stats, "__TRK_TABLE__": trk_table, "__ABL_TABLE__": abl_table, "__SPD_TABLE__": spd_table, "__CASES__": cases,
         "__DATA__": json.dumps(data), "__REPO__": REPO,
         "__ENV__": html.escape(f"{env['chip']} ({env['cpu_cores']} cores), {env['ram_gb']:.0f} GB, macOS {env['macos']} · Python {env['python']} · torch {env['torch']} · onnxruntime {env['onnxruntime']} · ultralytics {env['ultralytics']}"),
         "__CONF_TRACK__": str(conf_track), "__CONF_DISP__": str(conf_disp),
         "__PIPE_DET_T__": cfg["model_type"].replace("yolo", "YOLO") + " detection", "__PIPE_DET__": "ONNX (CPU) or PyTorch (MPS)",
-        "__PIPE_TRK__": f"tracker sees conf ≥ {conf_track}", "__PIPE_EVT__": f"stopped vehicle, crowding · shown ≥ {conf_disp}",
+        "__PIPE_TRK__": f"tracker sees conf ≥ {conf_track}", "__PIPE_EVT__": f"stopped vehicle, crowding, fire, smoke, flood, crash · shown ≥ {conf_disp}",
         "__ABL_FN__": f"{a0['num_misses'] - a1['num_misses']:,}", "__ABL_FP__": f"{a1['num_false_positives'] - a0['num_false_positives']:,}", "__ABL_SW__": str(a1["num_switches"] - a0["num_switches"]),
         "__ABL_MOTA__": f"{(a1['mota'] - a0['mota']) * 100:.1f}", "__ABL_IDF1__": f"{(a1['idf1'] - a0['idf1']) * 100:.1f}",
         "__ABL_BUF_SW__": f"{a2['num_switches']} vs {a1['num_switches']}",
@@ -225,6 +312,8 @@ th:first-child,td:first-child{text-align:left;white-space:normal;min-width:150px
 .live .off{padding:26px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:center}@media(max-width:760px){.live .off{grid-template-columns:minmax(0,1fr)}}
 .live .off h3{margin-bottom:6px}pre.cmd{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;font:14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);overflow-x:auto}
 .live .off img{width:100%;border-radius:10px;border:1px solid var(--line)}
+.fails{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:14px}.fail{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}.fail img{width:100%;display:block;aspect-ratio:4/3;object-fit:contain;background:#14181c}.fail figcaption{padding:10px 12px;font-size:13px;color:#3b434c}
+tr.grp td{background:var(--soft);text-align:left;white-space:normal;font-weight:400;color:var(--text)}table.inc th,table.inc td{padding:9px 10px}
 .cases{display:grid;gap:18px}.case{border-radius:16px;padding:22px}
 .case-head{display:flex;gap:12px;align-items:center}.case-head h3{min-width:0;overflow-wrap:anywhere}.tag{background:var(--accent);color:#fff;font-weight:700;border-radius:8px;padding:2px 10px;font-size:13px;flex:none}
 .hero-num{font-size:clamp(24px,3vw,30px);font-weight:700;margin:12px 0;letter-spacing:-.02em;overflow-wrap:anywhere}.hero-num span{display:block;font-size:14px;font-weight:400;color:var(--muted);letter-spacing:0}
@@ -238,7 +327,7 @@ th:first-child,td:first-child{text-align:left;white-space:normal;min-width:150px
 footer{padding:60px 0 80px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);margin-top:72px}
 @media(max-width:560px){.tog{display:flex;flex-direction:column;width:100%;border-radius:16px}.tog button{text-align:center;border-radius:12px}.wrap{padding:0 16px}.chart{height:280px}.chart.tall{height:340px}.lead{font-size:17px}}
 </style></head><body>
-<nav><div class="wrap"><b>city-incident-ai</b><a href="#live">Try it live</a><a href="#pipeline">Pipeline</a><a href="#numbers">Numbers</a><a href="#detection">Detection</a><a href="#tracking">Tracking</a><a href="#speed">Speed</a><a href="#errors">Errors</a><a href="#debug">Debugging</a><a href="#gait">Gait</a><a href="#limits">Limits</a></div></nav>
+<nav><div class="wrap"><b>city-incident-ai</b><a href="#live">Try it live</a><a href="#incidents">Incidents</a><a href="#pipeline">Pipeline</a><a href="#numbers">Numbers</a><a href="#detection">Detection</a><a href="#tracking">Tracking</a><a href="#speed">Speed</a><a href="#errors">Errors</a><a href="#debug">Debugging</a><a href="#gait">Gait</a><a href="#limits">Limits</a></div></nav>
 
 <header class="hero"><div class="wrap">
   <div><h1>Video analytics for<br><span style="color:var(--accent)">city cameras</span></h1>
@@ -249,8 +338,24 @@ footer{padding:60px 0 80px;color:var(--muted);font-size:13.5px;border-top:1px so
 </div></header>
 
 <section id="live"><div class="wrap"><h2><small>Try it live</small>Run the pipeline on a clip</h2>
-<p class="lead">Pick one of six example clips or upload your own, choose pose on/off, device and frame limit, and the real pipeline returns the annotated video and its events.</p>
+<p class="lead">Pick one of fifteen example clips (six street scenes, nine real incidents) or upload your own, choose pose on/off, device and frame limit, and the real pipeline returns the annotated video and its events.</p>
 <div id="live-box" class="box live"><p class="muted" style="margin:0">Checking for the local demo server…</p></div></div></section>
+
+<section id="incidents"><div class="wrap"><h2><small>Incident detection</small>Fire, smoke, flood, crash</h2>
+<p class="lead">Detecting incidents, not counting people. Four approaches compared on real labelled images, then checked on real video. Rows in green are the default the pipeline uses.</p>
+<div class="box"><p style="margin-top:0">__INC_DATA_LINE__</p>
+<p class="muted" style="margin-bottom:0"><b>No training:</b> A open-vocabulary detector, B CLIP zero-shot, D ready-made community weights from Hugging Face. <b>Trained by me:</b> C, __INC_TRAIN__ for fire and smoke, and a linear probe on frozen CLIP embeddings (seconds) for flood and crash. Thresholds are chosen on a validation split; the test split is only used to report.</p></div>
+<p class="swipe">Swipe sideways for all columns →</p><div class="box scroll" style="margin-top:16px"><table class="inc"><thead><tr><th>Approach</th><th>Training</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>FPR street</th><th>FPR hard neg.</th><th>FPR other</th><th>ms / image</th></tr></thead><tbody>__INC_TABLE__</tbody></table></div>
+<p class="muted" style="font-size:13px">FPR = share of negatives flagged. Street = ordinary street/traffic frames, hard = sunsets, lights, neon, steam, rain, rivers, ambulances; other = remaining negatives of the source dataset. Latency: one image, batch 1, this Mac (MPS). __INC_PROMPT__.</p>
+<div class="grid2" style="margin-top:16px"><div class="box"><h4>F1 on the test split</h4><div class="chart"><canvas id="c-inc-f1"></canvas></div></div><div class="box"><h4>False-positive rate on hard negatives (lower is better)</h4><div class="chart"><canvas id="c-inc-fpr"></canvas></div></div></div>
+<div class="box" style="margin-top:16px"><h4>Default per class</h4><p class="cap">Best validation F1, but a no-training approach wins if it is within 0.03 F1. D is not wired into the pipeline.</p><ul class="b" style="margin:0">__INC_DEFAULTS__</ul></div>
+<h3 style="margin:36px 0 8px">Where it fails</h3><p class="muted">The most confident false positives and the lowest-scored misses of the default detector, with my reading of why. Images from datasets with no stated licence are left out of the repo.</p>
+<div class="fails">__INC_GALLERY__</div>
+<h3 style="margin:36px 0 8px">On real video</h3><p class="muted">Frames scored every 0.5 s; an event fires when 3 of the last 5 scored frames are above the threshold, so 1.0 s is the earliest possible time.</p>
+<p>__INC_VID_SUMMARY__</p>
+<p class="swipe">Swipe sideways for all columns →</p><div class="box scroll"><table><thead><tr><th>Clip</th><th>Expected</th><th>Incident visible from</th><th>First event</th><th>Timing</th><th>Other classes that fired</th></tr></thead><tbody>__INC_VIDEO_ROWS__</tbody></table></div>
+<div class="note"><b>The crash detector is not reliable.</b> __INC_CRASH_AUDIT__</div>
+</div></section>
 
 <section id="pipeline"><div class="wrap"><h2><small>How it works</small>Pipeline</h2>
 <p class="lead">One pass per frame. The tracker is fed low-confidence boxes; drawing and events only use confident ones.</p>
@@ -303,10 +408,10 @@ footer{padding:60px 0 80px;color:var(--muted);font-size:13.5px;border-top:1px so
 <li><b>Timing evaluation.</b> Event timing would be scored against ground truth (e.g. force-plate or manually labelled strikes), which is the evaluation this project does not yet have for its own event rules.</li></ul></div></div></div></section>
 
 <section id="limits"><div class="wrap"><h2><small>Honest limitations</small>What this does not do</h2>
-<ul class="b"><li>COCO classes only and no fine-tuning: nothing beyond the pretrained YOLO11 vocabulary is detected.</li>
+<ul class="b"><li>Tracked objects are COCO classes only (pretrained YOLO11). Fire, smoke, flood and crash come from separate image classifiers; the crash one reacts to dashcam/CCTV style and is not reliable (see Incident detection).</li>
 <li>Small and occluded people are mostly missed: __LIM_TINY__ people under 50 px found at 640, and __LIM_OCC__ recall at visibility under 0.3.</li>
 <li>The event rules are pixel-threshold heuristics with no event-level ground truth, so their precision and recall are unmeasured.</li>
-<li>The collision rule is 2D box IoU and is off in the default configuration.</li>
+<li>The old 2D box-IoU collision rule is off and kept only as a legacy option; the learned crash detector replaces it.</li>
 <li>Evaluation covers three MOT17 sequences (person only, __LIM_FRAMES__ frames for the speed benchmark) with py-motmetrics, not the official TrackEval/HOTA; the demo clips have no ground truth. Speed numbers are single runs on one machine.</li></ul>
 <p style="margin-top:28px"><a href="__REPO__/tree/interview-prep">View the code and reproduce every number on GitHub →</a></p></div></section>
 <footer><div class="wrap">city-incident-ai · results generated from <code>reports/metrics/*.json</code> by <code>scripts/build_site.py</code></div></footer>
@@ -320,7 +425,7 @@ document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{document.quer
 // live demo: iframe when the local server answers /demo, otherwise a card (static hosting, file://, server down)
 (async function(){
  const box=document.getElementById('live-box');
- const off=()=>{box.innerHTML='<div class="off"><div><h3>The live demo runs locally</h3><p class="muted">This page is a static copy, so there is no server behind it. Clone the repo and run one command; the demo opens in this section at <code>http://localhost:8000</code>.</p><pre class="cmd">make run</pre><p class="muted" style="font-size:13px">Upload a clip or pick one of the six example clips, optionally with pose skeletons (shown right).</p></div><img src="img/demo_pose_runner.gif" alt="pose skeleton on a treadmill runner" loading="lazy"></div>';};
+ const off=()=>{box.innerHTML='<div class="off"><div><h3>The live demo runs locally</h3><p class="muted">This page is a static copy, so there is no server behind it. Clone the repo and run one command; the demo opens in this section at <code>http://localhost:8000</code>.</p><pre class="cmd">make run</pre><p class="muted" style="font-size:13px">Upload a clip or pick one of the fifteen example clips, optionally with pose skeletons (shown right).</p></div><img src="img/demo_pose_runner.gif" alt="pose skeleton on a treadmill runner" loading="lazy"></div>';};
  try{
   const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),2500);
   const r=await fetch('demo/',{signal:ctl.signal,cache:'no-store'}); clearTimeout(t);
@@ -340,6 +445,11 @@ const P=v=>(v*100).toFixed(1)+'%';
 const bars=(id,labels,sets,fmt,opts={})=>new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:sets},options:Object.assign({responsive:true,maintainAspectRatio:false,
  plugins:{legend:{display:sets.length>1,labels:{usePointStyle:true,boxWidth:8,boxHeight:8}},tooltip:{callbacks:{label:c=>(c.dataset.label?c.dataset.label+': ':'')+fmt(c.parsed.y)}}},
  scales:{y:{beginAtZero:true,grid:{color:GRID},ticks:{callback:v=>fmt(v)}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false}}}},opts)});
+// incidents
+if(D.incidents){const I=D.incidents,COL={A:G2,B:ACC2,D:G1,C:ACC};
+ const mk=k=>Object.keys(I.approaches).map(a=>({label:I.approaches[a].label,data:I.approaches[a][k],backgroundColor:COL[a],borderRadius:5}));
+ bars('c-inc-f1',I.classes,mk('f1'),v=>v==null?'–':v.toFixed(2),{scales:{y:{beginAtZero:true,max:1,grid:{color:GRID}},x:{grid:{display:false}}}});
+ bars('c-inc-fpr',I.classes,mk('fpr_hard'),P,{scales:{y:{beginAtZero:true,max:1,ticks:{callback:v=>P(v)},grid:{color:GRID}},x:{grid:{display:false}}}});}
 // PR
 const cv=D.pr.curves, mk=(key,label,c,w)=>({label:label,data:cv[key].points.map(p=>({x:p.recall,y:p.precision})),showLine:true,pointRadius:0,borderColor:c,borderWidth:w,tension:0});
 const SEQ=['MOT17-02','MOT17-04','MOT17-09'];
